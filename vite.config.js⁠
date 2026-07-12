@@ -1,0 +1,27 @@
+import react from '@vitejs/plugin-react'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { defineConfig } from 'vite'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    // 1. Expone el servidor a la interfaz de red para que los puertos se enlacen con el exterior
+    host: true,
+    // 2. Permite que el subdominio dinámico de GitHub pase los filtros de seguridad de host de Vite
+    allowedHosts: ['.app.github.dev'],
+    // 3. Configura el servidor local para interceptar rutas virtuales y servir siempre index.html
+    historyApiFallback: true,
+    port: 5173
+  },
+  build: {
+    target: 'es2022',
+  },
+});
