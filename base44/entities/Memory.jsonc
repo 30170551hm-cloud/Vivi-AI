@@ -1,0 +1,93 @@
+{
+  "name": "Memory",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "name",
+        "preference",
+        "work",
+        "company",
+        "routine",
+        "goal",
+        "idea",
+        "reminder",
+        "calendar",
+        "fact",
+        "relationship",
+        "story",
+        "project",
+        "decision",
+        "document",
+        "task",
+        "milestone"
+      ],
+      "description": "Type of memory being stored"
+    },
+    "key": {
+      "type": "string",
+      "description": "Short label for the memory"
+    },
+    "value": {
+      "type": "string",
+      "description": "The remembered content"
+    },
+    "importance": {
+      "type": "number",
+      "default": 1,
+      "description": "Relative importance 1-5"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "paused",
+        "abandoned"
+      ],
+      "default": "active",
+      "description": "Status for goals, tasks, projects and decisions"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for cross-referencing and organizing memories"
+    },
+    "timeline_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When this event or memory is relevant (chronology)"
+    },
+    "is_milestone": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this memory marks a key milestone or important event"
+    },
+    "milestone_type": {
+      "type": "string",
+      "enum": [
+        "achievement",
+        "decision",
+        "change",
+        "meeting",
+        "discovery",
+        "commitment",
+        "loss",
+        "celebration",
+        "other"
+      ],
+      "description": "Classification of the milestone for quick retrieval"
+    },
+    "conversation_ref": {
+      "type": "string",
+      "description": "Reference to the conversation where this milestone occurred"
+    }
+  },
+  "required": [
+    "category",
+    "value"
+  ]
+}

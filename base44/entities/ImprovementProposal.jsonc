@@ -1,0 +1,106 @@
+{
+  "name": "ImprovementProposal",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo corto de la mejora propuesta"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n detallada de qu\u00e9 se quiere mejorar y por qu\u00e9"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "voz",
+        "avatar",
+        "memoria",
+        "conocimiento",
+        "razonamiento",
+        "seguridad",
+        "ui",
+        "api",
+        "rendimiento",
+        "venezuela",
+        "otro"
+      ],
+      "description": "Categor\u00eda del \u00e1rea a mejorar"
+    },
+    "current_limitation": {
+      "type": "string",
+      "description": "Limitaci\u00f3n detectada que motiva la propuesta"
+    },
+    "proposed_solution": {
+      "type": "string",
+      "description": "Soluci\u00f3n dise\u00f1ada y arquitectura propuesta"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detectada",
+        "analizada",
+        "dise\u00f1ada",
+        "implementada",
+        "probada",
+        "aprobada",
+        "rechazada",
+        "desplegada"
+      ],
+      "default": "detectada",
+      "description": "Estado en el ciclo de automejora"
+    },
+    "founder_notes": {
+      "type": "string",
+      "description": "Notas o feedback del Founder"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "baja",
+        "media",
+        "alta",
+        "critica"
+      ],
+      "default": "media"
+    },
+    "files_affected": {
+      "type": "string",
+      "description": "Lista de archivos que se crear\u00e1n o modificar\u00e1n (JSON string)"
+    },
+    "benefits": {
+      "type": "string",
+      "description": "Beneficios que aportar\u00e1 el cambio"
+    },
+    "risks": {
+      "type": "string",
+      "description": "Riesgos identificados"
+    },
+    "test_results": {
+      "type": "string",
+      "description": "Resultado de las pruebas autom\u00e1ticas"
+    },
+    "generated_code": {
+      "type": "string",
+      "description": "C\u00f3digo fuente generado por VDE"
+    },
+    "generated_docs": {
+      "type": "string",
+      "description": "Documentaci\u00f3n generada autom\u00e1ticamente"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "vde"
+      ],
+      "default": "manual",
+      "description": "Si fue creada manualmente o por el VDE"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "category"
+  ]
+}

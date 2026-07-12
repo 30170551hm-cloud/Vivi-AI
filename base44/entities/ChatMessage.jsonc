@@ -1,0 +1,48 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "vivi"
+      ],
+      "description": "Who sent the message"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message text"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "ID of the conversation this message belongs to"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "image",
+        "document",
+        "audio",
+        "video",
+        "link",
+        "generated_image"
+      ],
+      "default": "text",
+      "description": "Type of message content"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL of attached file"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Original file name"
+    }
+  },
+  "required": [
+    "role",
+    "content"
+  ]
+}

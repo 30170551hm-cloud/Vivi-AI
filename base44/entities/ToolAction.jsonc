@@ -1,0 +1,44 @@
+{
+  "name": "ToolAction",
+  "type": "object",
+  "properties": {
+    "tool_name": {
+      "type": "string",
+      "description": "Name of the tool that was executed"
+    },
+    "action": {
+      "type": "string",
+      "description": "Specific action performed within the tool"
+    },
+    "input_summary": {
+      "type": "string",
+      "description": "Brief summary of the input parameters"
+    },
+    "output_summary": {
+      "type": "string",
+      "description": "Brief summary of the result"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error",
+        "pending"
+      ],
+      "default": "success",
+      "description": "Execution status"
+    },
+    "duration_ms": {
+      "type": "number",
+      "description": "Execution time in milliseconds"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error details if status is error"
+    }
+  },
+  "required": [
+    "tool_name",
+    "action"
+  ]
+}

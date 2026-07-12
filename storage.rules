@@ -1,0 +1,18 @@
+// Storage Security Rules — borrador para reemplazar base44 UploadFile.
+// NO DESPLEGADO. Probar en el emulador antes de aplicar a un proyecto real.
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /uploads/{userId}/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size < 25 * 1024 * 1024; // 25MB máx por archivo
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
