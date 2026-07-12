@@ -12,16 +12,26 @@
 const USERS_KEY = 'vivi_local_users';
 const SESSION_KEY = 'vivi_local_session';
 
+function sanitizeUsersObject(value) {
+  const clean = Object.create(null);
+  if (!value || typeof value !== 'object') return clean;
+  for (const [key, user] of Object.entries(value)) {
+    if (key === '__proto__' || key === 'prototype' || key === 'constructor') continue;
+    clean[key] = user;
+  }
+  return clean;
+}
+
 function readUsers() {
   try {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+    return sanitizeUsersObject(JSON.parse(localStorage.getItem(USERS_KEY) || '{}'));
   } catch {
-    return {};
+    return Object.create(null);
   }
 }
 
 function writeUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  localStorage.setItem(USERS_KEY, JSON.stringify(sanitizeUsersObject(users)));
 }
 
 function getSessionEmail() {
@@ -68,7 +78,8 @@ export const localAuthAdapter = {
   /** Login local — valida contra lo guardado en localStorage. */
   async loginViaEmailPassword(email, password) {
     const users = readUsers();
-    const user = users[String(email).toLowerCase().trim()];
+    const normalizedEmail = String(email).toLowerCase().trim();
+    const user = Object.prototype.hasOwnProperty.call(users, normalizedEmail) ? users[normalizedEmail] : null;
     if (!user || user.password !== password) {
       throw new Error('Email o contraseña inválidos');
     }
@@ -80,7 +91,7 @@ export const localAuthAdapter = {
   async register({ email, password }) {
     const normalizedEmail = String(email).toLowerCase().trim();
     const users = readUsers();
-    if (users[normalizedEmail]) {
+    if (Object.prototype.hasOwnProperty.call(users, normalizedEmail)) {
       throw new Error('Ya existe una cuenta con ese email');
     }
     users[normalizedEmail] = { ...defaultProfile(normalizedEmail), password };
@@ -104,7 +115,7 @@ export const localAuthAdapter = {
     const email = getSessionEmail();
     if (!email) throw new Error('No hay sesión activa para restablecer la contraseña en modo local');
     const users = readUsers();
-    if (!users[email]) throw new Error('Usuario no encontrado');
+    if (!Object.prototype.hasOwnProperty.call(users, email)) throw new Error('Usuario no encontrado');
     users[email].password = newPassword;
     writeUsers(users);
   },
