@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileCode, CheckCircle, AlertTriangle, FlaskConical, FileText, Code2, X } from 'lucide-react';
+import { FileCode, CheckCircle, AlertTriangle, FlaskConical, FileText, Code2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 function Section({ icon: Icon, title, children, color = 'text-white/60' }) {

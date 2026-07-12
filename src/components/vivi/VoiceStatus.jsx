@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Volume2, Cpu, Globe, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { Volume2, Globe, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import { useVivi } from '@/vivi/hooks/useVivi';
 
 // Voice system diagnostics for the Founder panel.

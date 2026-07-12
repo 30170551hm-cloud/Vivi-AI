@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Volume2, Play, RefreshCw, AlertCircle, CheckCircle2, XCircle, Activity } from 'lucide-react';
+import { ArrowLeft, Volume2, Play, RefreshCw, CheckCircle2, XCircle, Activity } from 'lucide-react';
 import { useVivi } from '@/vivi/hooks/useVivi';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/vivi/PullToRefreshIndicator';

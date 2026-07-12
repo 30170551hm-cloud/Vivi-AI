@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Send, FileCode, CheckCircle, AlertTriangle, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Loader2, Send, FileCode, AlertTriangle } from 'lucide-react';
 import { useVivi } from '@/vivi/hooks/useVivi';
 
 const CATEGORIES = [
