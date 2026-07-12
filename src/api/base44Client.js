@@ -1,5 +1,4 @@
 import { appParams, normalizeEnvValue } from '@/lib/app-params';
-
 const { appId, token, functionsVersion, appBaseUrl } = appParams;
 
 // ── Base44 es ahora OPCIONAL y de carga perezosa ──
