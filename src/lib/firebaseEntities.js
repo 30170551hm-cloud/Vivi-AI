@@ -1,26 +1,26 @@
-// firebaseEntities.js — Adaptador Firestore que replica la forma exacta de la
+// firebaseEntities.js â Adaptador Firestore que replica la forma exacta de la
 // API `backend.entities.<Nombre>.*` usada hoy por ViviMemory.js y useChat.js.
 //
-// OBJETIVO: que migrar un módulo sea cambiar UNA línea de import, no reescribir
-// la lógica de negocio. Cada método de aquí replica el método equivalente de
+// OBJETIVO: que migrar un mÃ³dulo sea cambiar UNA lÃ­nea de import, no reescribir
+// la lÃ³gica de negocio. Cada mÃ©todo de aquÃ­ replica el mÃ©todo equivalente de
 // Base44 verificado por grep en el repo real:
-//   .list(sort, limit)              → ej: Memory.list('-importance', 200)
-//   .filter(query, sort, limit)     → ej: ChatMessage.filter({conversation_id}, 'created_date', 200)
-//   .create(data)                   → añade ownerId automáticamente (request.auth.uid)
+//   .list(sort, limit)              â ej: Memory.list('-importance', 200)
+//   .filter(query, sort, limit)     â ej: ChatMessage.filter({conversation_id}, 'created_date', 200)
+//   .create(data)                   â aÃ±ade ownerId automÃ¡ticamente (request.auth.uid)
 //   .update(id, patch)
 //   .delete(id)
 //   .deleteMany(query)
 //   .bulkCreate(records)
 //
-// ESTADO: escrito y sintácticamente verificado (node --check), pero NO PROBADO
+// ESTADO: escrito y sintÃ¡cticamente verificado (node --check), pero NO PROBADO
 // contra un proyecto Firebase real (este entorno no tiene credenciales ni red).
-// NO está importado por ningún módulo de producción todavía — cero riesgo para
+// NO estÃ¡ importado por ningÃºn mÃ³dulo de producciÃ³n todavÃ­a â cero riesgo para
 // el flujo actual, que sigue funcionando 100% sobre Base44.
 //
 // Antes de conectar esto de verdad:
 //   1. Desplegar firestore.rules a un proyecto real.
-//   2. Probar cada método contra el emulador o un proyecto de staging.
-//   3. Recién entonces cambiar el import en ViviMemory.js / useChat.js / etc.
+//   2. Probar cada mÃ©todo contra el emulador o un proyecto de staging.
+//   3. ReciÃ©n entonces cambiar el import en ViviMemory.js / useChat.js / etc.
 
 import {
   collection,
@@ -42,7 +42,7 @@ import app from './firebase';
 
 /**
  * Convierte el string de orden estilo Base44 ('-importance', 'created_date')
- * en los parámetros de orderBy de Firestore.
+ * en los parÃ¡metros de orderBy de Firestore.
  */
 function parseSort(sort) {
   if (!sort) return null;
@@ -55,7 +55,7 @@ function requireUid() {
   const auth = getAuth(app);
   const uid = auth.currentUser?.uid;
   if (!uid) {
-    throw new Error('No hay usuario autenticado (Firebase Auth). Operación bloqueada.');
+    throw new Error('No hay usuario autenticado (Firebase Auth). OperaciÃ³n bloqueada.');
   }
   return uid;
 }
@@ -65,9 +65,9 @@ function docToRecord(d) {
 }
 
 /**
- * Crea un adaptador de entidad para una colección de Firestore, con la misma
+ * Crea un adaptador de entidad para una colecciÃ³n de Firestore, con la misma
  * forma de API que `backend.entities.<Nombre>`.
- * @param {string} collectionName - nombre de la colección Firestore, ej. 'memories'
+ * @param {string} collectionName - nombre de la colecciÃ³n Firestore, ej. 'memories'
  * @param {{ scopedToOwner?: boolean }} opts - si true (default), filtra/inyecta
  *   ownerId = uid actual en todas las operaciones (aislamiento por usuario).
  */
@@ -102,7 +102,7 @@ export function createFirestoreEntity(collectionName, opts = {}) {
       return snap.docs.map(docToRecord);
     },
 
-    /** Crea un documento, inyectando ownerId + timestamps automáticamente. */
+    /** Crea un documento, inyectando ownerId + timestamps automÃ¡ticamente. */
     async create(data) {
       const payload = {
         ...data,
@@ -142,7 +142,7 @@ export function createFirestoreEntity(collectionName, opts = {}) {
       return { deleted: snap.docs.length };
     },
 
-    /** Crea múltiples documentos en una sola escritura por lotes. */
+    /** Crea mÃºltiples documentos en una sola escritura por lotes. */
     async bulkCreate(records) {
       const uid = scopedToOwner ? requireUid() : null;
       const batch = writeBatch(db);
@@ -164,7 +164,7 @@ export function createFirestoreEntity(collectionName, opts = {}) {
   };
 }
 
-// ── Entidades mapeadas 1:1 contra base44/entities/*.jsonc (ver informe de auditoría) ──
+// ââ Entidades mapeadas 1:1 contra base44/entities/*.jsonc (ver informe de auditorÃ­a) ââ
 export const FirestoreEntities = {
   User: createFirestoreEntity('users', { scopedToOwner: false }),
   Memory: createFirestoreEntity('memories'),
@@ -173,4 +173,11 @@ export const FirestoreEntities = {
   ToolAction: createFirestoreEntity('tool_actions'),
   ImprovementProposal: createFirestoreEntity('improvement_proposals', { scopedToOwner: false }),
   CertificationTest: createFirestoreEntity('certification_tests', { scopedToOwner: false }),
+  ActionLog: createFirestoreEntity('action_logs', { scopedToOwner: false }),
+  KnowledgeEntry: createFirestoreEntity('knowledge_entries', { scopedToOwner: false }),
+  DevTask: createFirestoreEntity('dev_tasks', { scopedToOwner: false }),
+  ProjectMemory: createFirestoreEntity('project_memories', { scopedToOwner: false }),
+  FinancialTransaction: createFirestoreEntity('financial_transactions', { scopedToOwner: false }),
+  IntegrationRequest: createFirestoreEntity('integration_requests', { scopedToOwner: false }),
+  IntegrationConnection: createFirestoreEntity('integration_connections', { scopedToOwner: false }),
 };
