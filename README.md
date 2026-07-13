@@ -1,16 +1,51 @@
-# Vivi AI (Firebase-only)
+# Vivi AI
 
-Este proyecto ya no usa Base44 en runtime. Autenticación, datos y archivos funcionan con Firebase.
+Asistente personal inteligente con avatar animado, gestión de rutinas, objetivos y memoria diaria.
+
+## Arquitectura
+
+- **Frontend**: React 18 + Vite 6 + Tailwind CSS
+- **Backend**: Firebase (Auth, Firestore, Storage, Functions)
+- **Deployment**: Vercel
+- **Source of truth**: Este repositorio (rama main)
+- **Dependencia de Base44**: NINGUNA (completamente independiente)
+
+## Estructura del Proyecto
+
+```
+src/
+├── lib/                    # Capa de abstracción Firebase
+│   ├── backendClient.js    # Reemplaza @/api/base44Client
+│   ├── firebase.js         # Inicialización Firebase
+│   ├── firebaseAuthAdapter.js  # Auth (reemplaza base44.auth)
+│   ├── firebaseEntities.js     # Entities (reemplaza base44.entities)
+│   ├── firebaseStorageAdapter.js  # Storage (reemplaza UploadFile)
+│   ├── llmProviders.js     # LLM vía Cloud Functions
+│   └── aiProvider.js       # Wrapper de IA
+├── vivi/
+│   ├── modules/            # 30+ módulos del sistema Vivi
+│   ├── core/               # EventBus, ModuleBase, ModuleRegistry
+│   ├── hooks/              # useVivi (React hook)
+│   └── index.js           # Bootstrap del sistema
+├── pages/                  # 12 páginas
+├── components/             # Componentes UI (shadcn/ui + vivi)
+└── App.jsx                 # Router principal
+
+functions/
+└── index.js                # Firebase Cloud Functions (callLLM, generateSpeech, etc.)
+```
 
 ## Requisitos
 
 1. Node.js 20+
-2. `npm install`
-3. Proyecto Firebase con Auth, Firestore, Storage y Functions habilitados
+2. Proyecto Firebase con Auth, Firestore, Storage y Functions habilitados
+3. Cuenta de Vercel
 
-## Variables de entorno frontend
+## Configuración
 
-Crea `.env.local` con:
+### 1. Variables de entorno frontend
+
+Crea `.env.local`:
 
 ```bash
 VITE_FIREBASE_API_KEY=
@@ -19,13 +54,21 @@ VITE_FIREBASE_PROJECT_ID=
 VITE_FIREBASE_STORAGE_BUCKET=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
+```
 
-# Solo fallback temporal (opcional)
-VITE_GEMINI_API_KEY=
-VITE_GEMINI_MODEL=gemini-1.5-flash
+### 2. Firebase Cloud Functions secrets
 
-# Solo para desarrollo local controlado sin Firebase completo
-VITE_ALLOW_LOCAL_AUTH=false
+```bash
+firebase functions:secrets:set OPENAI_API_KEY
+firebase functions:secrets:set GEMINI_API_KEY
+firebase functions:secrets:set GITHUB_TOKEN
+```
+
+### 3. Instalación
+
+```bash
+npm install
+cd functions && npm install && cd ..
 ```
 
 ## Desarrollo
@@ -34,25 +77,50 @@ VITE_ALLOW_LOCAL_AUTH=false
 npm run dev
 ```
 
-## Validación
+## Compilación
 
 ```bash
-npm run lint
 npm run build
+npm run lint
 ```
 
-## Functions (backend)
+## Despliegue en Vercel
 
-Configura secrets en Firebase Functions (nunca en frontend):
+1. Conecta este repositorio en [vercel.com](https://vercel.com)
+2. Configura las variables de entorno en el dashboard de Vercel
+3. Vercel detectará automáticamente Vite (Build: `npm run build`, Output: `dist`)
+4. Deploy automático en cada push a main
 
-- `OPENAI_API_KEY`
-- `GEMINI_API_KEY`
-- `GITHUB_TOKEN`
-- `REPO_EDIT_ALLOWLIST` (CSV de prefijos permitidos)
-- `REPO_EDIT_REQUIRE_APPROVAL` (`true|false`)
-
-Luego despliega:
+## Despliegue de Firebase Functions
 
 ```bash
+cd functions
+npm install
 firebase deploy --only functions
 ```
+
+## Backend Cloud Functions
+
+| Endpoint | Propósito |
+|---|---|
+| callLLM | Inferencia LLM (OpenAI / Gemini) |
+| generateSpeech | Text-to-speech |
+| generateImage | Generación de imágenes IA |
+| getRepoTree | Listar archivos del repo |
+| getRepoFile | Leer archivo del repo |
+| proposeRepoChanges | Proponer cambios (con allowlist) |
+| approveRepoChanges | Aprobar y aplicar cambios |
+
+## Módulos del Sistema
+
+ViviCore, ViviVoice, ViviAvatar, ViviMemory, ViviKnowledge, ViviIntegrations,
+ViviNotifications, ViviSettings, ViviFounderConsole, ViviSecurity, ViviApi,
+ViviLogger, ViviRealtimeFacts, ViviVenezuela, ViviVenezuelaManual, ViviVAD,
+ViviTOOR, ViviBaseBrain, ViviVDE, ViviFounderAuth, ViviReasoning,
+ViviEmotionEngine, ViviVisionEngine, ViviAudioEngine, ViviLearningEngine,
+ViviConversationEngine, ViviCodeAnalyzer, ViviPermissionManager,
+ViviUniversity, ViviAnalytics
+
+## Licencia
+
+Propiedad de HRYET. Fundador: Henrry Moyses García Rojas.
