@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { backend } from '@/lib/backendClient';
 import { useVivi } from '@/vivi/hooks/useVivi';
 import { EVENTS } from '@/vivi';
+import { generateFile } from '@/lib/fileGenerator';
 
 function getFileMessageType(file) {
   const type = file.type || '';
@@ -224,6 +225,81 @@ export function useChat() {
     setSending(false);
   }, [createConversation]);
 
+  // Generate and deliver a file (PDF, TXT, MD, Word, CSV) to the chat
+  const deliverFile = useCallback(async (content, fileType = 'txt', fileName = 'documento') => {
+    if (!content?.trim()) return;
+
+    let convId = currentIdRef.current;
+    if (!convId) {
+      const conv = await createConversation(`Documento: ${fileName}`);
+      if (!conv) return;
+      convId = conv.id;
+    }
+
+    // Save the user's request as a message
+    try {
+      const userMsg = await backend.entities.ChatMessage.create({
+        role: 'user',
+        content: `Genera un documento ${fileType.toUpperCase()}: ${fileName}`,
+        conversation_id: convId,
+        message_type: 'text',
+      });
+      setMessages((prev) => [...prev, userMsg]);
+    } catch (e) {
+      console.error(e);
+    }
+
+    setSending(true);
+    try {
+      const file = generateFile(content, fileType, fileName);
+      const result = await backend.integrations.Core.UploadFile({ file });
+      if (result?.file_url) {
+        const viviMsg = await backend.entities.ChatMessage.create({
+          role: 'vivi',
+          content: `Aquí está tu documento: ${file.name}`,
+          conversation_id: convId,
+          message_type: 'generated_document',
+          file_url: result.file_url,
+          file_name: file.name,
+        });
+        setMessages((prev) => [...prev, viviMsg]);
+        loadConversations();
+      }
+    } catch (e) {
+      console.error('File generation failed', e);
+    }
+    setSending(false);
+  }, [createConversation, loadConversations]);
+
+  // Listen for Vivi's automatic file delivery events
+  useEffect(() => {
+    if (!vivi) return;
+    const unsub = vivi.on(EVENTS.FILE_DELIVERED, async (payload) => {
+      if (!payload?.content) return;
+      const convId = currentIdRef.current;
+      if (!convId) return;
+      try {
+        const file = generateFile(payload.content, payload.fileType || 'txt', payload.fileName || 'documento');
+        const result = await backend.integrations.Core.UploadFile({ file });
+        if (result?.file_url) {
+          const viviMsg = await backend.entities.ChatMessage.create({
+            role: 'vivi',
+            content: payload.message || 'Aquí está tu documento.',
+            conversation_id: convId,
+            message_type: 'generated_document',
+            file_url: result.file_url,
+            file_name: file.name,
+          });
+          setMessages((prev) => [...prev, viviMsg]);
+          loadConversations();
+        }
+      } catch (e) {
+        console.error('Auto file delivery failed', e);
+      }
+    });
+    return () => { if (unsub) unsub(); };
+  }, [vivi, loadConversations]);
+
   // Export a conversation as a text file
   const exportConversation = useCallback(async (id) => {
     try {
@@ -259,6 +335,7 @@ export function useChat() {
     deleteConversation,
     sendMessage,
     generateImage,
+    deliverFile,
     exportConversation,
   };
 }
