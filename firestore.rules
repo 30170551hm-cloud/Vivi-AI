@@ -77,6 +77,35 @@ service cloud.firestore {
       allow read, update, delete: if isOwner(resource) || isFounderOrAdmin();
     }
 
+    match /action_logs/{id} {
+      allow read, write: if isFounderOrAdmin();
+    }
+
+    match /knowledge_entries/{id} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isFounderOrAdmin();
+    }
+
+    match /dev_tasks/{id} {
+      allow read, write: if isFounderOrAdmin();
+    }
+
+    match /project_memories/{id} {
+      allow read, write: if isFounderOrAdmin();
+    }
+
+    match /financial_transactions/{id} {
+      allow read, write: if isFounderOrAdmin();
+    }
+
+    match /integration_requests/{id} {
+      allow read, write: if isFounderOrAdmin();
+    }
+
+    match /integration_connections/{id} {
+      allow read, write: if isFounderOrAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
