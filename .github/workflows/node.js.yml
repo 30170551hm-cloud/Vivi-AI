@@ -1,0 +1,31 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Lint frontend
+        run: npm run lint
+      - name: Build frontend
+        run: npm run build
+      - name: Verify Vercel build command
+        run: npm run vercel-build
+      - name: Install functions dependencies
+        working-directory: functions
+        run: npm ci
+      - name: Verify functions entrypoint
+        working-directory: functions
+        run: node -e "import('./index.js').then(() => console.log('functions import ok'))"

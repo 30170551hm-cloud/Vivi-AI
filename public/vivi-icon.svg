@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- PLACEHOLDER — reemplazar con el logo/branding real de Vivi AI.
+       Círculo simple en el theme-color ya declarado en index.html (#0a0512),
+       con un halo tipo "avatar" para que no sea un cuadrado en blanco
+       mientras no exista el ícono real. -->
+  <rect width="512" height="512" rx="96" fill="#0a0512"/>
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#9d7cff" stroke-width="10" opacity="0.6"/>
+  <circle cx="256" cy="256" r="96" fill="#9d7cff" opacity="0.9"/>
+  <circle cx="256" cy="256" r="48" fill="#ffffff"/>
+</svg>

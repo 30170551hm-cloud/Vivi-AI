@@ -1,0 +1,10 @@
+{
+  "name": "Remix: Vivi-AI-",
+  "description": "Imported from GitHub: 30170551hm-cloud/Vivi-AI-",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

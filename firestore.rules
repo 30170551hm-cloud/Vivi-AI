@@ -1,0 +1,84 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDocPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function actorDoc() {
+      return get(userDocPath(request.auth.uid));
+    }
+
+    function isFounderOrAdmin() {
+      return isSignedIn()
+        && exists(userDocPath(request.auth.uid))
+        && (
+          actorDoc().data.is_founder == true
+          || actorDoc().data.role == 'admin'
+        );
+    }
+
+    function isOwner(resource) {
+      return isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    function isOwnerOnCreate() {
+      return isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && (request.auth.uid == userId || isFounderOrAdmin());
+      allow update, delete: if isSignedIn() && (request.auth.uid == userId || isFounderOrAdmin());
+    }
+
+    match /memories/{id} {
+      allow read, update, delete: if isOwner(resource) || isFounderOrAdmin();
+      allow create: if isOwnerOnCreate();
+    }
+
+    match /conversations/{id} {
+      allow read, update, delete: if isOwner(resource) || isFounderOrAdmin();
+      allow create: if isOwnerOnCreate();
+    }
+
+    match /chat_messages/{id} {
+      allow read, update, delete: if isOwner(resource) || isFounderOrAdmin();
+      allow create: if isOwnerOnCreate();
+    }
+
+    match /tool_actions/{id} {
+      allow read: if isOwner(resource) || isFounderOrAdmin();
+      allow create: if isOwnerOnCreate() || isFounderOrAdmin();
+      allow update, delete: if isFounderOrAdmin();
+    }
+
+    match /improvement_proposals/{id} {
+      allow read, write: if isFounderOrAdmin();
+    }
+
+    match /certification_tests/{id} {
+      allow read, write: if isFounderOrAdmin();
+    }
+
+    match /repo_change_audits/{id} {
+      allow create: if isFounderOrAdmin() && request.resource.data.actor_uid == request.auth.uid;
+      allow read: if isFounderOrAdmin() || (isSignedIn() && resource.data.actor_uid == request.auth.uid);
+      allow update, delete: if isFounderOrAdmin();
+    }
+
+    match /workspace_artifacts/{id} {
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow read, update, delete: if isOwner(resource) || isFounderOrAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
