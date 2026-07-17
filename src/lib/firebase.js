@@ -1,44 +1,20 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+// src/lib/firebase.js
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
-// Firebase configuration - uses env variables or demo mode
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'demo-key',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'demo-auth-domain',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'demo-project',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'demo-bucket',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || 'demo-sender',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || 'demo-app'
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-/** @type {import('firebase/app').FirebaseApp | undefined} */
-let app;
-/** @type {import('firebase/auth').Auth | undefined} */
-let auth;
-/** @type {import('firebase/firestore').Firestore | undefined} */
-let db;
-/** @type {import('firebase/storage').FirebaseStorage | undefined} */
-let storage;
-let firebaseInitialized = false;
+// Inicialización segura evitando duplicados (Singleton pattern)
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-try {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
-  
-  // Set persistence
-  setPersistence(auth, browserLocalPersistence).catch(error => {
-    console.warn('Firebase persistence not available:', error);
-  });
-  
-  firebaseInitialized = true;
-} catch (error) {
-  console.warn('Firebase initialization failed, falling back to local storage:', error);
-  firebaseInitialized = false;
-}
-
-export { auth, db, storage, app, firebaseInitialized };
-export default app;
+export { app, auth, db };
