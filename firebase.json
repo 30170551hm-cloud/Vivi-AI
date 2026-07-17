@@ -1,4 +1,4 @@
-{
+Set-Content -Path "C:\vivi-ai\firebase.json" -Value '{
   "functions": [
     {
       "source": "functions",
@@ -10,9 +10,7 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ]
+      "runtime": "nodejs20"
     }
   ]
-}
+}' -Encoding utf8
