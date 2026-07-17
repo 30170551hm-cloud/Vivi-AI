@@ -123,7 +123,7 @@ export const generateSpeech = onCall(async (request) => {
   try {
     return await generateSpeechOpenAI({ apiKey, text: text.slice(0, 5000), uid: request.auth.uid });
   } catch (err) {
-    throw new HttpsError('internal', `Fallo generando voz: ${err.message}`);
+    throw new HPSError('internal', `Fallo generando voz: ${err.message}`);
   }
 });
 
