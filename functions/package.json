@@ -1,4 +1,4 @@
-{
+Set-Content -Path "C:\vivi-ai\functions\package.json" -Value '{
   "name": "functions",
   "description": "Cloud Functions for Vivi AI backend",
   "engines": {
@@ -12,4 +12,4 @@
     "openai": "^4.28.0"
   },
   "private": true
-}
+}' -Encoding utf8
