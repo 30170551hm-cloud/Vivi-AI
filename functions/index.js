@@ -142,3 +142,4 @@ export const generateImage = onCall(async (request) => {
     throw new HttpsError('internal', `Fallo generando imagen: ${err.message}`);
   }
 });
+});
