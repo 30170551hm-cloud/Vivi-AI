@@ -1,38 +1,39 @@
-import Vivi from '@/pages/Vivi';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
 import { AuthProvider } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
+
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
-// Nota: Mantén aquí tus imports reales de las demás vistas de Vivi AI
+import Vivi from '@/pages/Vivi';
+import Chat from '@/pages/Chat';
 
 export default function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Rutas Públicas */}
+
+          {/* Rutas públicas */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Rutas Protegidas */}
-          <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-            {/* Aquí se montan las rutas protegidas del sistema */}
-            <Route
-  path="/"
-  element={<Vivi />}
-/>
-navigate('/chat')
-import Chat from '@/pages/Chat';
-<Route
-  path="/chat"
-  element={<Chat />}
-/>
+          {/* Rutas protegidas */}
+          <Route
+            element={
+              <ProtectedRoute
+                unauthenticatedElement={<Navigate to="/login" replace />}
+              />
+            }
+          >
+            <Route path="/" element={<Vivi />} />
+            <Route path="/chat" element={<Chat />} />
           </Route>
 
-          {/* Fallback general */}
+          {/* Ruta por defecto */}
           <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
       </Router>
     </AuthProvider>
