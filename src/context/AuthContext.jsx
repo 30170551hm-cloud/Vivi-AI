@@ -1,5 +1,7 @@
+// src/context/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
+import { doc, getDoc } from 'firebase/firestore';
 
 const AuthContext = createContext(null);
 
@@ -11,15 +13,28 @@ export const AuthProvider = ({ children }) => {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = firebaseAuthAdapter.onAuthStateChanged(async (firebaseUser) => {
+    // Suscripción limpia y segura al adaptador de autenticación
+    const unsubscribe = firebaseAuthAdapter.subscribeToAuthChanges(async (firebaseUser) => {
       try {
-        setIsLoadingAuth(true);
         setAuthError(null);
 
         if (firebaseUser) {
-          const userProfile = await firebaseAuthAdapter.me().catch(async () => {
-            return { uid: firebaseUser.uid, email: firebaseUser.email };
-          });
+          // Intentar recuperar el perfil de Firestore de manera segura
+          let userProfile = { 
+            uid: firebaseUser.uid, 
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName || ''
+          };
+
+          try {
+            const userRef = doc(firebaseAuthAdapter.db, 'users', firebaseUser.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              userProfile = { ...userProfile, ...userSnap.data() };
+            }
+          } catch (firestoreError) {
+            console.warn('[AuthContext] No se pudo leer Firestore, usando credenciales básicas de Auth:', firestoreError);
+          }
 
           setUser(userProfile);
           setIsAuthenticated(true);
@@ -51,7 +66,7 @@ export const AuthProvider = ({ children }) => {
       await firebaseAuthAdapter.logout();
       
       if (shouldRedirect) {
-        firebaseAuthAdapter.redirectToLogin();
+        window.location.href = '/login';
       }
     } catch (error) {
       console.error('[AuthContext] Error al cerrar sesión:', error);
@@ -59,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    firebaseAuthAdapter.redirectToLogin(window.location.pathname);
+    window.location.href = '/login';
   };
 
   return (
