@@ -1,3 +1,4 @@
+import Vivi from '@/pages/Vivi';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/lib/AuthContext';
@@ -18,7 +19,10 @@ export default function App() {
           {/* Rutas Protegidas */}
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
             {/* Aquí se montan las rutas protegidas del sistema */}
-            <Route path="/" element={<div className="p-8 text-2xl font-bold">Vivi AI - Panel Principal Operativo</div>} />
+            <Route
+  path="/"
+  element={<Vivi />}
+/>
           </Route>
 
           {/* Fallback general */}
