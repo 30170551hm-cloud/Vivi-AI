@@ -80,7 +80,7 @@ async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls }) {
       },
     });
   }
-  const result = model.generateContent ? await model.generateContent(parts) : await model.generateContent({ contents: parts });
+  const result = await model.generateContent(parts);
   const text = result.response.text();
   return responseSchema ? JSON.parse(text) : text;
 }
