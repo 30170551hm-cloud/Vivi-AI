@@ -1,42 +1,52 @@
+// src/firebase/firebaseAuthAdapter.js
+import { auth, db } from '../lib/firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut, 
-  onAuthStateChanged 
-} from "firebase/auth";
-import { auth, db } from "./firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export const firebaseAuthAdapter = {
-  // Observador de estado de autenticación
-  onAuthStateChanged: (callback) => {
-    return onAuthStateChanged(auth, callback);
+  auth,
+  db,
+  async login(email, password) {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
   },
-
-  // Obtener perfil del usuario actual desde Firestore
-  me: async () => {
-    const user = auth.currentUser;
-    if (!user) throw new Error("No hay usuario autenticado");
-
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      return { uid: user.uid, email: user.email, ...userDoc.data() };
-    } else {
-      const defaultProfile = { uid: user.uid, email: user.email, createdAt: new Date().toISOString() };
-      await setDoc(userDocRef, defaultProfile, { merge: true });
-      return defaultProfile;
+  async register(email, password, additionalData = {}) {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
+      email: user.email,
+      createdAt: new Date().toISOString(),
+      ...additionalData
+    }, { merge: true });
+    return user;
+  },
+  async loginWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    const user = userCredential.user;
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        uid: user.uid,
+        email: user.email,
+        createdAt: new Date().toISOString()
+      });
     }
+    return user;
   },
-
-  // Cerrar sesión
-  logout: async () => {
-    await signOut(auth);
+  async logout() {
+    return await signOut(auth);
   },
-
-  // Redirecciones seguras
-  redirectToLogin: () => {
-    window.location.href = "/login";
+  subscribeToAuthChanges(callback) {
+    return onAuthStateChanged(auth, callback);
   }
 };
