@@ -12,7 +12,7 @@
 // GEMINI_API_KEY) configurado como secret.
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import app from './firebase';
+import { app } from './firebase';
 
 const functions = getFunctions(app);
 const callLLMFn = httpsCallable(functions, 'callLLM');
