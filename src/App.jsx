@@ -23,6 +23,12 @@ export default function App() {
   path="/"
   element={<Vivi />}
 />
+navigate('/chat')
+import Chat from '@/pages/Chat';
+<Route
+  path="/chat"
+  element={<Chat />}
+/>
           </Route>
 
           {/* Fallback general */}
