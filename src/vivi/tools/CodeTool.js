@@ -29,8 +29,8 @@ export default class CodeTool extends ToolBase {
     const prompt = prompts[action];
     if (!prompt) return { success: false, data: null, error: `Acción desconocida: ${action}` };
 
-    const response = await base44.integrations.Core.InvokeLLM({ prompt });
-    const text = typeof response === 'string' ? response.trim() : '';
+    const response = await base44.integrations.Core.InvokeLLM();
+    const text = String(response ?? '');
     return { success: true, data: { result: text } };
   }
 }
