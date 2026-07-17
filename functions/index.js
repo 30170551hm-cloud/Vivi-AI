@@ -7,10 +7,6 @@ initializeApp();
 
 setGlobalOptions({ region: 'us-central1', maxInstances: 10 });
 
-// Puedes colocar tus llaves directamente aquí para pruebas inmediatas sin restricciones
-const FALLBACK_OPENAI_KEY = process.env.OPENAI_API_KEY || "";
-const FALLBACK_GEMINI_KEY = process.env.GEMINI_API_KEY || "";
-
 function pickProvider(requested, keys) {
   if (requested) return requested;
   if (keys.openai) return 'openai';
@@ -84,7 +80,7 @@ async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls }) {
       },
     });
   }
-  const result = await model.generateContent(parts);
+  const result = model.generateContent ? await model.generateContent(parts) : await model.generateContent({ contents: parts });
   const text = result.response.text();
   return responseSchema ? JSON.parse(text) : text;
 }
@@ -98,8 +94,8 @@ export const callLLM = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'Falta "prompt" (string).');
   }
   const keys = { 
-    openai: process.env.OPENAI_API_KEY || FALLBACK_OPENAI_KEY, 
-    gemini: process.env.GEMINI_API_KEY || FALLBACK_GEMINI_KEY 
+    openai: process.env.OPENAI_API_KEY || "", 
+    gemini: process.env.GEMINI_API_KEY || "" 
   };
   const chosen = pickProvider(provider, keys);
   try {
@@ -123,7 +119,7 @@ export const generateSpeech = onCall(async (request) => {
   if (!text || typeof text !== 'string') {
     throw new HttpsError('invalid-argument', 'Falta "text" (string).');
   }
-  const apiKey = process.env.OPENAI_API_KEY || FALLBACK_OPENAI_KEY;
+  const apiKey = process.env.OPENAI_API_KEY || "";
   try {
     return await generateSpeechOpenAI({ apiKey, text: text.slice(0, 5000), uid: request.auth.uid });
   } catch (err) {
@@ -139,7 +135,7 @@ export const generateImage = onCall(async (request) => {
   if (!prompt || typeof prompt !== 'string') {
     throw new HttpsError('invalid-argument', 'Falta "prompt" (string).');
   }
-  const apiKey = process.env.OPENAI_API_KEY || FALLBACK_OPENAI_KEY;
+  const apiKey = process.env.OPENAI_API_KEY || "";
   try {
     return await generateImageOpenAI({ apiKey, prompt });
   } catch (err) {
