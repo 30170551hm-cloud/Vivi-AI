@@ -14,6 +14,8 @@ import {
   setDoc
 } from "firebase/firestore";
 
+const USERS_COLLECTION = "users";
+
 export const firebaseAuthAdapter = {
 
   auth,
@@ -39,7 +41,7 @@ export const firebaseAuthAdapter = {
     const user = result.user;
 
     await setDoc(
-      doc(db, "users", user.uid),
+      doc(db, USERS_COLLECTION, user.uid),
       {
         uid: user.uid,
         email: user.email,
@@ -62,7 +64,7 @@ export const firebaseAuthAdapter = {
 
     const user = result.user;
 
-    const ref = doc(db, "users", user.uid);
+    const ref = doc(db, USERS_COLLECTION, user.uid);
 
     const snap = await getDoc(ref);
 
@@ -98,7 +100,7 @@ export const firebaseAuthAdapter = {
       return null;
     }
 
-    const ref = doc(db, "users", current.uid);
+    const ref = doc(db, USERS_COLLECTION, current.uid);
 
     const snap = await getDoc(ref);
 
@@ -123,7 +125,7 @@ export const firebaseAuthAdapter = {
       throw new Error('No hay usuario autenticado');
     }
 
-    const ref = doc(db, "users", current.uid);
+    const ref = doc(db, USERS_COLLECTION, current.uid);
 
     await setDoc(ref, {
       uid: current.uid,

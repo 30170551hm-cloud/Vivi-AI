@@ -1110,6 +1110,9 @@ Vivi:`,
   }
 
   _persistChat(role, content) {
+    // Conversation-scoped persistence now lives in useChat, where the active
+    // conversation_id is available. Core keeps emitting replies without
+    // writing orphan ChatMessage records.
   }
 
   /** Allow external callers (API module) to send input programmatically. */
