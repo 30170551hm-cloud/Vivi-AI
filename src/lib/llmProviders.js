@@ -16,8 +16,8 @@ const generateSpeechFn = httpsCallable(functions, 'generateSpeech');
 
 function rethrowCallableError(err, fnName) {
   const code = err?.code || 'functions/unknown';
-  const message = err?.message || 'Error desconocido en Cloud Functions';
-  throw new Error(`[${fnName}] ${code}: ${message}`);
+  const message = err?.message || 'Unknown Cloud Functions error';
+  throw new Error(`${fnName} failed [${code}]: ${message}`, { cause: err });
 }
 
 export const CoreIntegrations = {
