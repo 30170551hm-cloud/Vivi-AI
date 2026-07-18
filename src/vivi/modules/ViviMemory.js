@@ -11,7 +11,9 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
+import { FirestoreEntities } from '@/lib/firebaseEntities';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 const CATEGORY_LABELS = {
   name: 'Nombre',
@@ -71,7 +73,7 @@ export default class ViviMemory extends ModuleBase {
    * what they've discussed before.
    */
   async loadPermanentContext() {
-    const memories = await this.safe(() => base44.entities.Memory.list('-importance', 200), []);
+    const memories = await this.safe(() => FirestoreEntities.Memory.list('-importance', 200), []);
     this._cache = memories || [];
     this._computeStats();
 
@@ -98,7 +100,7 @@ export default class ViviMemory extends ModuleBase {
   /** Retrieve all memories, most important first. Cached per session. */
   async recall() {
     if (this._cache) return this._cache;
-    const memories = await this.safe(() => base44.entities.Memory.list('-importance', 200), []);
+    const memories = await this.safe(() => FirestoreEntities.Memory.list('-importance', 200), []);
     this._cache = memories || [];
     this._computeStats();
     this.emit(EVENTS.MEMORY_RECALLED, { count: this._cache.length });
@@ -143,7 +145,7 @@ export default class ViviMemory extends ModuleBase {
    * Restores the thread of past conversations across sessions.
    */
   async recallConversationHistory(limit = 20) {
-    const messages = await this.safe(() => base44.entities.ChatMessage.list('-created_date', limit), []);
+    const messages = await this.safe(() => FirestoreEntities.ChatMessage.list('-created_date', limit), []);
     if (!messages || messages.length === 0) return [];
     return messages.reverse().map((m) => ({ role: m.role, content: m.content }));
   }
@@ -396,7 +398,7 @@ export default class ViviMemory extends ModuleBase {
   /** Store a new memory. */
   async store({ category, key, value, importance = 1, status, tags, timeline_date, is_milestone, milestone_type, conversation_ref }) {
     const record = await this.safe(() =>
-      base44.entities.Memory.create({
+      FirestoreEntities.Memory.create({
         category, key, value,
         importance,
         status: status || 'active',
@@ -416,7 +418,7 @@ export default class ViviMemory extends ModuleBase {
 
   /** Update an existing memory. */
   async update(id, patch) {
-    const record = await this.safe(() => base44.entities.Memory.update(id, patch));
+    const record = await this.safe(() => FirestoreEntities.Memory.update(id, patch));
     if (record) {
       this._cache = null;
       this._computeStats();
@@ -427,21 +429,21 @@ export default class ViviMemory extends ModuleBase {
 
   /** Delete a memory by id. */
   async forget(id) {
-    await this.safe(() => base44.entities.Memory.delete(id));
+    await this.safe(() => FirestoreEntities.Memory.delete(id));
     this._cache = null;
     this._computeStats();
   }
 
   /** Delete all memories (full reset). */
   async forgetAll() {
-    await this.safe(() => base44.entities.Memory.deleteMany({}));
+    await this.safe(() => FirestoreEntities.Memory.deleteMany({}));
     this._cache = [];
     this._computeStats();
   }
 
   /** List all memories for the admin panel. */
   async listAll() {
-    const memories = await this.safe(() => base44.entities.Memory.list('-created_date', 500), []);
+    const memories = await this.safe(() => FirestoreEntities.Memory.list('-created_date', 500), []);
     return memories || [];
   }
 
@@ -486,7 +488,7 @@ export default class ViviMemory extends ModuleBase {
         timeline_date: m.timeline_date || undefined,
       }));
     if (records.length === 0) return { imported: 0 };
-    const created = await this.safe(() => base44.entities.Memory.bulkCreate(records), []);
+    const created = await this.safe(() => FirestoreEntities.Memory.bulkCreate(records), []);
     this._cache = null;
     this._computeStats();
     return { imported: created?.length || 0 };
@@ -554,7 +556,7 @@ export default class ViviMemory extends ModuleBase {
     if (nameMatch) {
       const name = nameMatch[1];
       try {
-        await base44.auth.updateMe({ display_name: name });
+        await firebaseAuthAdapter.updateMe({ display_name: name });
         const settings = this.registry?.get('settings');
         if (settings) settings.refresh();
         this.emit(EVENTS.SETTINGS_UPDATED, { display_name: name });
@@ -564,7 +566,7 @@ export default class ViviMemory extends ModuleBase {
     // LLM-powered extraction
     try {
       const todayISO = new Date().toISOString().split('T')[0];
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await CoreIntegrations.InvokeLLM({
         prompt: `Analiza esta conversación y extrae TODA la información personal digna de recordar sobre el usuario.
 
 Fecha de hoy: ${todayISO}

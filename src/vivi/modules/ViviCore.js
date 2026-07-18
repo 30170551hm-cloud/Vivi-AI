@@ -16,6 +16,7 @@
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
 import { base44 } from '@/api/base44Client';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 const FOUNDER_NAME = 'Henrry Moyses García Rojas';
 const FOUNDER_ANSWER =
@@ -359,7 +360,7 @@ export default class ViviCore extends ModuleBase {
       const timeOfDay = hour < 12 ? 'mañana' : hour < 19 ? 'tarde' : 'noche';
       const todayStr = now.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' });
 
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await CoreIntegrations.InvokeLLM({
         prompt: `${SYSTEM_PROMPT}
 
 Lo que recuerdas del usuario:
@@ -461,7 +462,7 @@ Responde SOLO con el saludo, en español venezolano natural.`,
       const timeOfDay = hour < 12 ? 'mañana' : hour < 19 ? 'tarde' : 'noche';
       const todayStr = now.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' });
 
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await CoreIntegrations.InvokeLLM({
         prompt: `${SYSTEM_PROMPT}
 
 Lo que recuerdas del usuario (Founder):
@@ -928,7 +929,7 @@ Vivi:`;
     }
 
     this._pipeLog('LLM_CALL', { gen, hasFile: !!fileUrls });
-    const response = await base44.integrations.Core.InvokeLLM({
+    const response = await CoreIntegrations.InvokeLLM({
       prompt,
       file_urls: fileUrls || undefined,
       model: 'gpt_5_mini',
@@ -1003,7 +1004,7 @@ Vivi:`;
   async _searchWeb(query, lang) {
     const locale = lang || 'es-ES';
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await CoreIntegrations.InvokeLLM({
         prompt: `Eres Vivi, una asistente venezolana chismosa, empática y natural. Busca la respuesta en internet, DANDO PRIORIDAD a Wikipedia como fuente principal y complementando con otras fuentes confiables si es necesario. Responde en el idioma ${locale}.
 
 IMPORTANTE:
@@ -1043,7 +1044,7 @@ Responde con información verificable. Si no encuentras nada confiable, di que n
         .map((m) => `${m.role === 'user' ? 'Usuario' : 'Vivi'}: ${m.content}`)
         .join('\n');
 
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await CoreIntegrations.InvokeLLM({
         prompt: `${SYSTEM_PROMPT}
 
 ${venezuelaBlock}
@@ -1109,7 +1110,6 @@ Vivi:`,
   }
 
   _persistChat(role, content) {
-    this.safe(() => base44.entities.ChatMessage.create({ role, content }));
   }
 
   /** Allow external callers (API module) to send input programmatically. */

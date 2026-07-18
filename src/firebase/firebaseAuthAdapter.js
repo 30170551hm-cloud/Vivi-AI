@@ -115,6 +115,34 @@ export const firebaseAuthAdapter = {
 
   },
 
+  async updateMe(patch = {}) {
+
+    const current = auth.currentUser;
+
+    if (!current) {
+      throw new Error('No hay usuario autenticado');
+    }
+
+    const ref = doc(db, "users", current.uid);
+
+    await setDoc(ref, {
+      uid: current.uid,
+      email: current.email,
+      updatedAt: new Date().toISOString(),
+      ...patch
+    }, {
+      merge: true
+    });
+
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data() : {
+      uid: current.uid,
+      email: current.email,
+      ...patch
+    };
+
+  },
+
   async logout() {
     return signOut(auth);
   },

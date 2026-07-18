@@ -22,11 +22,11 @@ const generateSpeechFn = httpsCallable(functions, 'generateSpeech');
 export const CoreIntegrations = {
   /**
    * Reemplazo directo de base44.integrations.Core.InvokeLLM.
-   * @param {{prompt: string, response_json_schema?: object, file_urls?: string[], provider?: 'openai'|'gemini'}} params
+   * @param {{prompt: string, response_json_schema?: object, file_urls?: string[], provider?: 'openai'|'gemini', model?: string, add_context_from_internet?: boolean}} params
    * @returns {Promise<object|string>} objeto JSON si hay schema, string si no
    */
-  async InvokeLLM({ prompt, response_json_schema, file_urls, provider }) {
-    const { data } = await callLLMFn({ prompt, response_json_schema, file_urls, provider });
+  async InvokeLLM({ prompt, response_json_schema, file_urls, provider, model, add_context_from_internet }) {
+    const { data } = await callLLMFn({ prompt, response_json_schema, file_urls, provider, model, add_context_from_internet });
     return /** @type {object|string} */ (data);
   },
 
@@ -48,8 +48,8 @@ export const CoreIntegrations = {
    * @param {{text: string, language_code?: string}} params
    * @returns {Promise<{url: string}>}
    */
-  async GenerateSpeech({ text }) {
-    const { data } = await generateSpeechFn({ text });
+  async GenerateSpeech({ text, language_code }) {
+    const { data } = await generateSpeechFn({ text, language_code });
     return /** @type {{url: string}} */ (data);
   },
 };
