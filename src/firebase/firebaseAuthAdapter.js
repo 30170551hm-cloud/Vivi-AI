@@ -14,6 +14,8 @@ import {
   setDoc
 } from "firebase/firestore";
 
+const USERS_COLLECTION = "users";
+
 export const firebaseAuthAdapter = {
 
   auth,
@@ -39,7 +41,7 @@ export const firebaseAuthAdapter = {
     const user = result.user;
 
     await setDoc(
-      doc(db, "users", user.uid),
+      doc(db, USERS_COLLECTION, user.uid),
       {
         uid: user.uid,
         email: user.email,
@@ -62,7 +64,7 @@ export const firebaseAuthAdapter = {
 
     const user = result.user;
 
-    const ref = doc(db, "users", user.uid);
+    const ref = doc(db, USERS_COLLECTION, user.uid);
 
     const snap = await getDoc(ref);
 
@@ -98,7 +100,7 @@ export const firebaseAuthAdapter = {
       return null;
     }
 
-    const ref = doc(db, "users", current.uid);
+    const ref = doc(db, USERS_COLLECTION, current.uid);
 
     const snap = await getDoc(ref);
 
@@ -111,6 +113,38 @@ export const firebaseAuthAdapter = {
 
     }
 
+    return snap.data();
+
+  },
+
+  async updateMe(patch = {}) {
+
+    const current = auth.currentUser;
+
+    if (!current) {
+      throw new Error('No hay usuario autenticado');
+    }
+
+    const ref = doc(db, USERS_COLLECTION, current.uid);
+    const nextProfile = {};
+
+    if (typeof patch.display_name === 'string') {
+      nextProfile.display_name = patch.display_name;
+    }
+
+    await setDoc(ref, {
+      uid: current.uid,
+      email: current.email,
+      updatedAt: new Date().toISOString(),
+      ...nextProfile
+    }, {
+      merge: true
+    });
+
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      throw new Error('No se pudo actualizar el perfil del usuario');
+    }
     return snap.data();
 
   },

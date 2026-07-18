@@ -3,7 +3,9 @@
 // AI image generation, and bridges to ViviCore for responses.
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import { FirestoreEntities } from '@/lib/firebaseEntities';
+import { CoreIntegrations } from '@/lib/llmProviders';
+import { UploadFile } from '@/lib/firebaseStorageAdapter';
 import { useVivi } from '@/vivi/hooks/useVivi';
 import { EVENTS } from '@/vivi';
 
@@ -33,7 +35,7 @@ export function useChat() {
   const loadConversations = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await base44.entities.Conversation.list('-updated_date', 50);
+      const list = await FirestoreEntities.Conversation.list('-updated_date', 50);
       setConversations(list || []);
     } catch (e) {
       console.error('Failed to load conversations', e);
@@ -47,7 +49,7 @@ export function useChat() {
   const loadMessages = useCallback(async (id) => {
     if (!id) { setMessages([]); return; }
     try {
-      const msgs = await base44.entities.ChatMessage.filter({ conversation_id: id }, 'created_date', 200);
+      const msgs = await FirestoreEntities.ChatMessage.filter({ conversation_id: id }, 'created_date', 200);
       setMessages(msgs || []);
     } catch (e) {
       console.error('Failed to load messages', e);
@@ -64,7 +66,7 @@ export function useChat() {
       const convId = currentIdRef.current;
       if (convId && payload?.text) {
         try {
-          const msg = await base44.entities.ChatMessage.create({
+          const msg = await FirestoreEntities.ChatMessage.create({
             role: 'vivi',
             content: payload.text,
             conversation_id: convId,
@@ -85,7 +87,7 @@ export function useChat() {
   // Create a new conversation
   const createConversation = useCallback(async (title = 'Nueva conversación') => {
     try {
-      const conv = await base44.entities.Conversation.create({ title });
+      const conv = await FirestoreEntities.Conversation.create({ title });
       setConversations((prev) => [conv, ...prev]);
       setCurrentId(conv.id);
       setMessages([]);
@@ -102,8 +104,8 @@ export function useChat() {
 
   const deleteConversation = useCallback(async (id) => {
     try {
-      await base44.entities.ChatMessage.deleteMany({ conversation_id: id });
-      await base44.entities.Conversation.delete(id);
+      await FirestoreEntities.ChatMessage.deleteMany({ conversation_id: id });
+      await FirestoreEntities.Conversation.delete(id);
       setConversations((prev) => prev.filter((c) => c.id !== id));
       if (currentIdRef.current === id) {
         setCurrentId(null);
@@ -134,7 +136,7 @@ export function useChat() {
 
     if (file) {
       try {
-        const result = await base44.integrations.Core.UploadFile({ file });
+        const result = await UploadFile({ file });
         fileUrl = result.file_url;
         fileName = file.name;
         messageType = getFileMessageType(file);
@@ -145,7 +147,7 @@ export function useChat() {
 
     // Persist the user's message
     try {
-      const userMsg = await base44.entities.ChatMessage.create({
+      const userMsg = await FirestoreEntities.ChatMessage.create({
         role: 'user',
         content: text || fileName || 'Archivo',
         conversation_id: convId,
@@ -193,7 +195,7 @@ export function useChat() {
 
     // Save the user's prompt as a message
     try {
-      const userMsg = await base44.entities.ChatMessage.create({
+      const userMsg = await FirestoreEntities.ChatMessage.create({
         role: 'user',
         content: prompt,
         conversation_id: convId,
@@ -206,9 +208,9 @@ export function useChat() {
 
     setSending(true);
     try {
-      const result = await base44.integrations.Core.GenerateImage({ prompt });
+      const result = await CoreIntegrations.GenerateImage({ prompt });
       if (result?.url) {
-        const viviMsg = await base44.entities.ChatMessage.create({
+        const viviMsg = await FirestoreEntities.ChatMessage.create({
           role: 'vivi',
           content: `Imagen generada para: ${prompt}`,
           conversation_id: convId,
@@ -228,7 +230,7 @@ export function useChat() {
   const exportConversation = useCallback(async (id) => {
     try {
       const conv = conversations.find((c) => c.id === id);
-      const msgs = await base44.entities.ChatMessage.filter({ conversation_id: id }, 'created_date', 500);
+      const msgs = await FirestoreEntities.ChatMessage.filter({ conversation_id: id }, 'created_date', 500);
       const text = msgs.map((m) => `[${m.role === 'user' ? 'Usuario' : 'Vivi'}]\n${m.content}`).join('\n\n---\n\n');
       const blob = new Blob([text], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);

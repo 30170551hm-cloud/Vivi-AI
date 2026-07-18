@@ -38,7 +38,7 @@ import {
   getFirestore,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import app from './firebase';
+import { app } from './firebase';
 
 /**
  * Convierte el string de orden estilo Base44 ('-importance', 'created_date')
