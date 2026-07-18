@@ -33,6 +33,9 @@ export default function AccountDeletion() {
       const currentUser = auth.currentUser;
       if (currentUser) {
         await Promise.all([
+          // FirestoreEntities has scopedToOwner:true by default, so deleteMany({})
+          // automatically adds where('ownerId','==', currentUser.uid) — only this
+          // user's documents are deleted.
           FirestoreEntities.Memory.deleteMany({}),
           FirestoreEntities.ChatMessage.deleteMany({}),
         ]);

@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   build-and-deploy:
     name: Build & Deploy
@@ -44,5 +48,5 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: vivi-ai-24a43
+          projectId: ${{ secrets.VITE_FIREBASE_PROJECT_ID || 'vivi-ai-24a43' }}
           channelId: live
