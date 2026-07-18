@@ -38,6 +38,7 @@ const NO_ACCESS_MSG =
 // Minimum thinking time — ZERO artificial delay for instant response.
 // The conversation flows like a real phone call: speak → instant reply.
 const MIN_THINK_MS = 0;
+const MAX_ERROR_DETAIL_LENGTH = 220;
 
 // Patterns that indicate a factual/informational question — Vivi searches
 // the web proactively for these instead of waiting for a low-confidence fallback.
@@ -1093,16 +1094,31 @@ Vivi:`,
   }
 
   _summarizeError(err) {
-    if (!err) return 'error desconocido';
+    if (!err) return 'unknown error';
     const anyErr = /** @type {any} */ (err);
     const code = typeof anyErr?.code === 'string' ? anyErr.code : '';
-    const message = typeof anyErr?.message === 'string' ? anyErr.message : String(err);
+    const rawMessage = typeof anyErr?.message === 'string' ? anyErr.message : String(err);
+    const message = rawMessage.replace(/\s+/g, ' ').trim();
     return code ? `[${code}] ${message}` : message;
   }
 
   _buildFailureReply(err) {
-    const detail = this._summarizeError(err);
-    return `No pude responder porque falló el motor IA: ${detail}`;
+    const detail = this._sanitizeErrorForUser(this._summarizeError(err)).slice(0, MAX_ERROR_DETAIL_LENGTH);
+    return `No pude procesar tu solicitud en este momento. Detalle técnico: ${detail}`;
+  }
+
+  _sanitizeErrorForUser(detail) {
+    return String(detail || 'unknown error')
+      .replace(/AIza[0-9A-Za-z\-_]{20,}/g, '[redacted-key]')
+      .replace(/sk-[A-Za-z0-9_-]{20,}/g, '[redacted-key]')
+      .replace(/eyJ[A-Za-z0-9._-]{20,}/g, '[redacted-token]')
+      .replace(/\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b/g, '[redacted-email]')
+      .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[redacted-ip]')
+      .replace(/\b(?:uid|user[_-]?id|project[_-]?id)\s*[:=]\s*[\w-]+\b/gi, '[redacted-id]')
+      .replace(/https?:\/\/\S+/g, '[url]')
+      .replace(/\/[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)+/g, '[path]')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   _formatMemory(memories, user) {
