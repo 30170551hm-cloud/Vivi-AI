@@ -14,12 +14,7 @@ const envEmails = import.meta.env.VITE_FOUNDER_EMAILS
   ? import.meta.env.VITE_FOUNDER_EMAILS.split(',').map((e) => e.trim().toLowerCase())
   : [];
 
-const FOUNDER_EMAILS = [
-  ...envEmails,
-  'henrrygarciarojas@gmail.com',
-  'henrry.garcia@hryet.com',
-  'hryet.venezuela@gmail.com',
-];
+const FOUNDER_EMAILS = envEmails;
 
 export default class ViviFounderAuth extends ModuleBase {
   constructor(bus) {

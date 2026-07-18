@@ -264,6 +264,7 @@ async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls, model: r
   const model = genAI.getGenerativeModel({
     model: modelName,
     generationConfig: normalizedSchema ? { responseMimeType: 'application/json', responseSchema: normalizedSchema } : undefined,
+    // Enable Google Search grounding dynamically when requested (Google Generative AI SDK feature)
     tools: add_context_from_internet ? [{ googleSearch: {} }] : undefined,
   });
 

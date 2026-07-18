@@ -31,10 +31,10 @@ try {
  * @returns {Promise<{file_url: string}>}
  */
 export async function UploadFile({ file }) {
-  if (!app || !storage) throw new Error('Firebase Storage no está inicializado.');
+  if (!app || !storage) throw new Error('Firebase Storage is not initialized.');
   const auth = getAuth(app);
   const uid = auth.currentUser?.uid;
-  if (!uid) throw new Error('No hay usuario autenticado — no se puede subir el archivo.');
+  if (!uid) throw new Error('No authenticated user - cannot upload file.');
 
   const safeName = `${Date.now()}_${file.name}`.replace(/[^\w.\-]/g, '_');
   const path = `uploads/${uid}/${safeName}`;

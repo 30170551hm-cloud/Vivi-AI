@@ -19,7 +19,7 @@ try {
 
   const hasConfig = firebaseConfig.apiKey && firebaseConfig.projectId;
   if (!hasConfig) {
-    console.warn("Firebase config is incomplete. Firebase will not be initialized.");
+    console.warn("Firebase config is incomplete. Missing required fields: apiKey or projectId. Firebase will not be initialized.");
   } else {
     if (!firebaseConfig.authDomain || !firebaseConfig.storageBucket) {
       console.warn("Firebase config is missing authDomain or storageBucket. Some features may not work.");

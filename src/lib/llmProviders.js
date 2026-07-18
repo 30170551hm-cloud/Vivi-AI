@@ -37,7 +37,7 @@ export const CoreIntegrations = {
    * @returns {Promise<object|string>} objeto JSON si hay schema, string si no
    */
   async InvokeLLM({ prompt, response_json_schema, file_urls, provider, model, add_context_from_internet }) {
-    if (!callLLMFn) throw new Error("Firebase Functions no está inicializado.");
+    if (!callLLMFn) throw new Error("Firebase Functions is not initialized.");
     const { data } = await callLLMFn({ prompt, response_json_schema, file_urls, provider, model, add_context_from_internet });
     return /** @type {object|string} */ (data);
   },
@@ -48,7 +48,7 @@ export const CoreIntegrations = {
    * @returns {Promise<{url: string}>}
    */
   async GenerateImage({ prompt }) {
-    if (!generateImageFn) throw new Error("Firebase Functions no está inicializado.");
+    if (!generateImageFn) throw new Error("Firebase Functions is not initialized.");
     const { data } = await generateImageFn({ prompt });
     return /** @type {{url: string}} */ (data);
   },
@@ -62,7 +62,7 @@ export const CoreIntegrations = {
    * @returns {Promise<{url: string}>}
    */
   async GenerateSpeech({ text, language_code }) {
-    if (!generateSpeechFn) throw new Error("Firebase Functions no está inicializado.");
+    if (!generateSpeechFn) throw new Error("Firebase Functions is not initialized.");
     const { data } = await generateSpeechFn({ text, language_code });
     return /** @type {{url: string}} */ (data);
   },
