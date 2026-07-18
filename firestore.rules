@@ -33,7 +33,9 @@ service cloud.firestore {
     // ── users/{uid} — perfil y preferencias (equivalente a base44 User entity) ──
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isFounder());
-      allow write: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId && (!("is_founder" in request.resource.data) || request.resource.data.is_founder == false);
+      allow update: if isSignedIn() && request.auth.uid == userId && (!("is_founder" in request.resource.data) || request.resource.data.is_founder == resource.data.is_founder);
+      allow delete: if isSignedIn() && request.auth.uid == userId;
     }
 
     // ── memories/{id} — equivalente a base44 Memory entity ──
