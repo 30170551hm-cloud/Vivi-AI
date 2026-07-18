@@ -1,18 +1,16 @@
-@'
 {
   "name": "functions",
   "description": "Cloud Functions for Vivi AI backend",
+  "private": true,
   "type": "module",
+  "main": "index.js",
   "engines": {
     "node": "20"
   },
-  "main": "index.js",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "firebase-admin": "^12.1.0",
     "firebase-functions": "^5.0.0",
-    "openai": "^4.52.7",
-    "@google/generative-ai": "^0.21.0"
-  },
-  "private": true
+    "openai": "^4.52.7"
+  }
 }
-'@ | Set-Content -Path .\functions\package.json -Encoding utf8
