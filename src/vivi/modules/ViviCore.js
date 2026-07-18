@@ -15,8 +15,8 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
 import { CoreIntegrations } from '@/lib/llmProviders';
+import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
 
 const FOUNDER_NAME = 'Henrry Moyses García Rojas';
 const FOUNDER_ANSWER =
@@ -345,7 +345,7 @@ export default class ViviCore extends ModuleBase {
       const history = context?.history || this._history || [];
 
       let user = null;
-      try { user = await base44.auth.me(); } catch { /* guest */ }
+      try { user = await firebaseAuthAdapter.me(); } catch { /* guest */ }
 
       const memoryBlock = memory.buildContextBlock(user);
       const historyBlock = history
@@ -441,7 +441,7 @@ Responde SOLO con el saludo, en español venezolano natural.`,
       const recent = await this.safe(() => memory.recallRecent(7, '', 10), []);
 
       let user = null;
-      try { user = await base44.auth.me(); } catch { /* guest */ }
+      try { user = await firebaseAuthAdapter.me(); } catch { /* guest */ }
 
       const memoryBlock = memory.buildContextBlock(user);
       const historyBlock = history
@@ -737,7 +737,14 @@ Responde SOLO con el saludo, en español venezolano natural.`,
 
     const thinkStart = Date.now();
     const isFactual = FACTUAL_PATTERNS.test(userText);
-    const result = await this.safe(() => this._generateReply(userText, null, isFactual, gen), null);
+    let result = null;
+    let generationError = null;
+    try {
+      result = await this._generateReply(userText, null, isFactual, gen);
+    } catch (err) {
+      generationError = err;
+      this._pipeLog('GENERATE_REPLY_ERROR', { gen, error: this._summarizeError(err) });
+    }
     await this._ensureMinThinkTime(thinkStart);
 
     // ── Stale check: if a newer request started, discard this result ──
@@ -747,7 +754,7 @@ Responde SOLO con el saludo, en español venezolano natural.`,
     }
 
     if (!result) {
-      const fallback = 'Lo siento, tuve un problema al procesar eso. ¿Puedes repetirlo?';
+      const fallback = this._buildFailureReply(generationError);
       this._history.push({ role: 'vivi', content: fallback });
       if (this._history.length > 50) this._history = this._history.slice(-50);
       this._emitReply(fallback, { confidence: 'baja', source: 'desconocido' });
@@ -804,7 +811,14 @@ Responde SOLO con el saludo, en español venezolano natural.`,
     this._history.push({ role: 'user', content: fileUrl ? `${text} [archivo adjunto]` : text });
 
     const thinkStart = Date.now();
-    const result = await this.safe(() => this._generateReply(text, fileUrl ? [fileUrl] : null, false, gen), null);
+    let result = null;
+    let generationError = null;
+    try {
+      result = await this._generateReply(text, fileUrl ? [fileUrl] : null, false, gen);
+    } catch (err) {
+      generationError = err;
+      this._pipeLog('GENERATE_REPLY_FILE_ERROR', { gen, error: this._summarizeError(err) });
+    }
     await this._ensureMinThinkTime(thinkStart);
 
     if (gen !== this._requestGen) {
@@ -813,7 +827,7 @@ Responde SOLO con el saludo, en español venezolano natural.`,
     }
 
     if (!result) {
-      const fallback = 'No pude procesar eso. ¿Puedes intentarlo de nuevo?';
+      const fallback = this._buildFailureReply(generationError);
       this._history.push({ role: 'vivi', content: fallback });
       if (this._history.length > 50) this._history = this._history.slice(-50);
       this._emitReply(fallback, { confidence: 'baja', source: 'desconocido' });
@@ -881,7 +895,7 @@ Responde SOLO con el saludo, en español venezolano natural.`,
     this._pipeLog('PROMPT_BUILD', { gen, forceWeb, hasFile: !!fileUrls });
 
     let user = null;
-    try { user = await base44.auth.me(); } catch { /* guest */ }
+    try { user = await firebaseAuthAdapter.me(); } catch { /* guest */ }
     if (memory) await memory.recall(); // ensure cache is warm
     const memoryBlock = memory ? memory.buildContextBlock(user) : 'Sin memoria disponible.';
     const lang = settings?.getLanguage() || 'es-ES';
@@ -929,36 +943,42 @@ Vivi:`;
     }
 
     this._pipeLog('LLM_CALL', { gen, hasFile: !!fileUrls });
-    const response = await CoreIntegrations.InvokeLLM({
-      prompt,
-      file_urls: fileUrls || undefined,
-      model: 'gpt_5_mini',
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          reply: {
-            type: 'string',
-            description: 'La respuesta de Vivi al usuario, en el mismo idioma de la pregunta. Emocional, natural, concisa.',
+    let response = null;
+    try {
+      response = await CoreIntegrations.InvokeLLM({
+        prompt,
+        file_urls: fileUrls || undefined,
+        model: 'gpt_5_mini',
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            reply: {
+              type: 'string',
+              description: 'La respuesta de Vivi al usuario, en el mismo idioma de la pregunta. Emocional, natural, concisa.',
+            },
+            confidence: {
+              type: 'string',
+              enum: ['alta', 'media', 'baja'],
+              description: 'Nivel de confianza: alta=verificada, media=razonamiento, baja=incompleta.',
+            },
+            source: {
+              type: 'string',
+              enum: ['conocimiento', 'herramienta', 'desconocido'],
+              description: 'conocimiento=interno, herramienta=API real, desconocido=sin evidencia.',
+            },
+            emotion: {
+              type: 'string',
+              enum: ['neutral', 'feliz', 'sorprendida', 'preocupada', 'triste', 'enojada', 'curiosa', 'divertida', 'concentrada'],
+              description: 'La emoción que Vivi siente al responder. Elige según el tono del tema: feliz=alegría, sorprendida=asombro, preocupada=inquietud, triste=dolor, enojada=molesta, curiosa=interés, divertida=broma/chiste, concentrada=enfoque/análisis profundo, neutral=neutro. NUNCA uses personalidades como sarcástica/chismosa/empática — esas son rasgos permanentes de Vivi, no emociones.',
+            },
           },
-          confidence: {
-            type: 'string',
-            enum: ['alta', 'media', 'baja'],
-            description: 'Nivel de confianza: alta=verificada, media=razonamiento, baja=incompleta.',
-          },
-          source: {
-            type: 'string',
-            enum: ['conocimiento', 'herramienta', 'desconocido'],
-            description: 'conocimiento=interno, herramienta=API real, desconocido=sin evidencia.',
-          },
-          emotion: {
-            type: 'string',
-            enum: ['neutral', 'feliz', 'sorprendida', 'preocupada', 'triste', 'enojada', 'curiosa', 'divertida', 'concentrada'],
-            description: 'La emoción que Vivi siente al responder. Elige según el tono del tema: feliz=alegría, sorprendida=asombro, preocupada=inquietud, triste=dolor, enojada=molesta, curiosa=interés, divertida=broma/chiste, concentrada=enfoque/análisis profundo, neutral=neutro. NUNCA uses personalidades como sarcástica/chismosa/empática — esas son rasgos permanentes de Vivi, no emociones.',
-          },
+          required: ['reply', 'confidence', 'source', 'emotion'],
         },
-        required: ['reply', 'confidence', 'source', 'emotion'],
-      },
-    });
+      });
+    } catch (err) {
+      this._pipeLog('LLM_CALL_ERROR', { gen, error: this._summarizeError(err) });
+      throw err;
+    }
 
     // ── Stale check after LLM returns ──
     if (gen !== this._requestGen) {
@@ -1070,6 +1090,19 @@ Vivi:`,
     } catch {
       return null;
     }
+  }
+
+  _summarizeError(err) {
+    if (!err) return 'error desconocido';
+    const anyErr = /** @type {any} */ (err);
+    const code = typeof anyErr?.code === 'string' ? anyErr.code : '';
+    const message = typeof anyErr?.message === 'string' ? anyErr.message : String(err);
+    return code ? `[${code}] ${message}` : message;
+  }
+
+  _buildFailureReply(err) {
+    const detail = this._summarizeError(err);
+    return `No pude responder porque falló el motor IA: ${detail}`;
   }
 
   _formatMemory(memories, user) {

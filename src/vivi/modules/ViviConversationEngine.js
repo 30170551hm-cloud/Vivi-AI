@@ -10,7 +10,7 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 const TOPIC_KEYWORDS = {
   trabajo: ['trabajo', 'oficina', 'proyecto', 'jefe', 'compa[ñn]ero', 'reunion', 'tarea'],
@@ -72,7 +72,7 @@ export default class ViviConversationEngine extends ModuleBase {
       .join('\n');
 
     const summary = await this.safe(() =>
-      base44.integrations.Core.InvokeLLM({
+      CoreIntegrations.InvokeLLM({
         prompt: `Resume esta conversación en ${lang} en 3-5 puntos clave. Incluye temas principales, decisiones tomadas y información personal mencionada.
 
 Conversación:

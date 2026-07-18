@@ -1,4 +1,3 @@
-@'
 {
   "hosting": {
     "public": "dist",
@@ -22,4 +21,3 @@
     "rules": "storage.rules"
   }
 }
-'@ | Set-Content -Path .\firebase.json -Encoding utf8

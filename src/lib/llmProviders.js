@@ -6,18 +6,19 @@
 //   await CoreIntegrations.InvokeLLM({ prompt, response_json_schema?, file_urls? })
 //   await CoreIntegrations.GenerateImage({ prompt })
 //
-// ESTADO: escrito y verificado sintácticamente. NO conectado a ningún módulo
-// de producción todavía — requiere que functions/index.js esté desplegado en
-// un proyecto Firebase real con al menos un proveedor (OPENAI_API_KEY o
-// GEMINI_API_KEY) configurado como secret.
-
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from './firebase';
 
-const functions = getFunctions(app);
+const functions = getFunctions(app, 'us-central1');
 const callLLMFn = httpsCallable(functions, 'callLLM');
 const generateImageFn = httpsCallable(functions, 'generateImage');
 const generateSpeechFn = httpsCallable(functions, 'generateSpeech');
+
+function rethrowCallableError(err, fnName) {
+  const code = err?.code || 'functions/unknown';
+  const message = err?.message || 'Error desconocido en Cloud Functions';
+  throw new Error(`[${fnName}] ${code}: ${message}`);
+}
 
 export const CoreIntegrations = {
   /**
@@ -26,8 +27,12 @@ export const CoreIntegrations = {
    * @returns {Promise<object|string>} objeto JSON si hay schema, string si no
    */
   async InvokeLLM({ prompt, response_json_schema, file_urls, provider, model, add_context_from_internet }) {
-    const { data } = await callLLMFn({ prompt, response_json_schema, file_urls, provider, model, add_context_from_internet });
-    return /** @type {object|string} */ (data);
+    try {
+      const { data } = await callLLMFn({ prompt, response_json_schema, file_urls, provider, model, add_context_from_internet });
+      return /** @type {object|string} */ (data);
+    } catch (err) {
+      rethrowCallableError(err, 'callLLM');
+    }
   },
 
   /**
@@ -36,8 +41,12 @@ export const CoreIntegrations = {
    * @returns {Promise<{url: string}>}
    */
   async GenerateImage({ prompt }) {
-    const { data } = await generateImageFn({ prompt });
-    return /** @type {{url: string}} */ (data);
+    try {
+      const { data } = await generateImageFn({ prompt });
+      return /** @type {{url: string}} */ (data);
+    } catch (err) {
+      rethrowCallableError(err, 'generateImage');
+    }
   },
 
   /**
@@ -49,7 +58,11 @@ export const CoreIntegrations = {
    * @returns {Promise<{url: string}>}
    */
   async GenerateSpeech({ text, language_code }) {
-    const { data } = await generateSpeechFn({ text, language_code });
-    return /** @type {{url: string}} */ (data);
+    try {
+      const { data } = await generateSpeechFn({ text, language_code });
+      return /** @type {{url: string}} */ (data);
+    } catch (err) {
+      rethrowCallableError(err, 'generateSpeech');
+    }
   },
 };
