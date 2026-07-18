@@ -126,22 +126,26 @@ export const firebaseAuthAdapter = {
     }
 
     const ref = doc(db, USERS_COLLECTION, current.uid);
+    const nextProfile = {};
+
+    if (typeof patch.display_name === 'string') {
+      nextProfile.display_name = patch.display_name;
+    }
 
     await setDoc(ref, {
       uid: current.uid,
       email: current.email,
       updatedAt: new Date().toISOString(),
-      ...patch
+      ...nextProfile
     }, {
       merge: true
     });
 
     const snap = await getDoc(ref);
-    return snap.exists() ? snap.data() : {
-      uid: current.uid,
-      email: current.email,
-      ...patch
-    };
+    if (!snap.exists()) {
+      throw new Error('No se pudo actualizar el perfil del usuario');
+    }
+    return snap.data();
 
   },
 
