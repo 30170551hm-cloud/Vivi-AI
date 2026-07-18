@@ -9,7 +9,7 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 // Claims that should be verified before responding — numbers, dates, facts.
 const VERIFIABLE_PATTERNS =
@@ -53,7 +53,7 @@ export default class ViviReasoning extends ModuleBase {
     this.emit(EVENTS.REASONING_ANALYZE, { claim, intent: analysis.intent });
 
     const result = await this.safe(() =>
-      base44.integrations.Core.InvokeLLM({
+      CoreIntegrations.InvokeLLM({
         prompt: `Verifica la siguiente afirmación o pregunta buscando en internet. Responde en ${lang}.
 
 Afirmación/Pregunta: ${claim}

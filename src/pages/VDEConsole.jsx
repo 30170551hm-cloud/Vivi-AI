@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit3, Save, X, Code2, FileCode, ChevronLeft, Cpu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { FirestoreEntities } from '@/lib/firebaseEntities';
 import { useVivi } from '@/vivi/hooks/useVivi';
 import PageTransition from '@/components/PageTransition';
 import VDEActivityDashboard from '@/components/vde/VDEActivityDashboard';
@@ -26,7 +26,7 @@ export default function VDEConsole() {
 
   const load = useCallback(async () => {
     try {
-      const data = await base44.entities.ImprovementProposal.list('-created_date', 100);
+      const data = await FirestoreEntities.ImprovementProposal.list('-created_date', 100);
       setProposals(data || []);
     } catch (err) {
       console.error('Error loading proposals:', err);
