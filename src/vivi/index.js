@@ -93,7 +93,7 @@ export function getVivi() {
     notifications: registry.get('notifications'),
     settings: registry.get('settings'),
     founderConsole: registry.get('founder_console'),
-// analytics: registry.get('analytics'),    security: registry.get('security'),
+    security: registry.get('security'),
     api: registry.get('api'),
     logger: registry.get('logger'),
     realtimeFacts: registry.get('realtime_facts'),
