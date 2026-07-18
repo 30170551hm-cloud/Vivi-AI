@@ -5,7 +5,7 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
 
 const DEFAULTS = {
   display_name: '',
@@ -33,7 +33,7 @@ export default class ViviSettings extends ModuleBase {
 
   /** Fetch the current user and their preferences. */
   async refresh() {
-    this._user = await this.safe(() => base44.auth.me(), null);
+    this._user = await this.safe(() => firebaseAuthAdapter.me(), null);
     if (this._user) {
       this._prefs = {
         display_name: this._user.display_name || DEFAULTS.display_name,
@@ -53,7 +53,7 @@ export default class ViviSettings extends ModuleBase {
 
   /** Update a preference and persist to the user entity. */
   async update(patch) {
-    const updated = await this.safe(() => base44.auth.updateMe(patch), null);
+    const updated = await this.safe(() => firebaseAuthAdapter.updateMe(patch), null);
     if (updated) {
       this._user = updated;
       Object.assign(this._prefs, patch);
