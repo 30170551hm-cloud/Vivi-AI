@@ -1,15 +1,18 @@
-Set-Content -Path "C:\vivi-ai\functions\package.json" -Value '{
+@'
+{
   "name": "functions",
   "description": "Cloud Functions for Vivi AI backend",
+  "type": "module",
   "engines": {
     "node": "20"
   },
   "main": "index.js",
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
-    "firebase-admin": "^12.0.0",
-    "firebase-functions": "^6.0.0",
-    "openai": "^4.28.0"
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^5.0.0",
+    "openai": "^4.52.7",
+    "@google/generative-ai": "^0.21.0"
   },
   "private": true
-}' -Encoding utf8
+}
+'@ | Set-Content -Path .\functions\package.json -Encoding utf8
