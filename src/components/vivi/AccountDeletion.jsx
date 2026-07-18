@@ -10,7 +10,8 @@ import {
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
 import { Trash2, AlertTriangle, Loader2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
+import { FirestoreEntities } from '@/lib/firebaseEntities';
 
 // Account deletion flow required by Google Play Store policy.
 // Wipes user-owned data (memories, chat history) then signs out.
@@ -28,15 +29,15 @@ export default function AccountDeletion() {
     setDeleting(true);
     setError(null);
     try {
-      const me = await base44.auth.me();
-      const userId = me?.id;
+      const me = await firebaseAuthAdapter.me();
+      const userId = me?.uid;
       if (userId) {
         await Promise.all([
-          base44.entities.Memory.deleteMany({ created_by_id: userId }),
-          base44.entities.ChatMessage.deleteMany({ created_by_id: userId }),
+          FirestoreEntities.Memory.deleteMany({ ownerId: userId }),
+          FirestoreEntities.ChatMessage.deleteMany({ ownerId: userId }),
         ]);
       }
-      await base44.auth.logout();
+      await firebaseAuthAdapter.logout();
     } catch {
       setError('No se pudo completar la eliminación. Intenta de nuevo.');
       setDeleting(false);

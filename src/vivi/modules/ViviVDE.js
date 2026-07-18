@@ -25,7 +25,8 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { FirestoreEntities } from '@/lib/firebaseEntities';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 const VDE_SYSTEM_PROMPT = `Eres el Vivi Development Engine (VDE), el ingeniero de software interno de Vivi AI.
 Tu trabajo es analizar solicitudes de desarrollo, diseñar arquitectura, generar código, escribir pruebas y producir informes técnicos.
@@ -116,7 +117,7 @@ export default class ViviVDE extends ModuleBase {
 
     // ── Step 2: Create the ImprovementProposal with the full report ──
     const proposal = await this.safe(() =>
-      base44.entities.ImprovementProposal.create({
+      FirestoreEntities.ImprovementProposal.create({
         title: reportData.title || request.slice(0, 80),
         description: reportData.description || request,
         category,
@@ -154,7 +155,7 @@ export default class ViviVDE extends ModuleBase {
   /** @param {string} request @param {string} category */
   async _generateReport(request, category) {
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await CoreIntegrations.InvokeLLM({
         prompt: `${VDE_SYSTEM_PROMPT}
 
 Solicitud del Founder: "${request}"
@@ -240,7 +241,7 @@ Sé específico y completo. Genera código real, funcional, listo para implement
    */
   async getPendingProposals() {
     const all = await this.safe(() =>
-      base44.entities.ImprovementProposal.filter({ source: 'vde' }, '-created_date', 50)
+      FirestoreEntities.ImprovementProposal.filter({ source: 'vde' }, '-created_date', 50)
     , null);
     return (all || []).filter((/** @type {{status?: string}} */ p) =>
       ['diseñada', 'implementada', 'probada'].includes(p.status || '')
@@ -252,7 +253,7 @@ Sé específico y completo. Genera código real, funcional, listo para implement
    */
   async listAllProposals(limit = 100) {
     return await this.safe(() =>
-      base44.entities.ImprovementProposal.list('-created_date', limit)
+      FirestoreEntities.ImprovementProposal.list('-created_date', limit)
     , null);
   }
 
@@ -267,7 +268,7 @@ Sé específico y completo. Genera código real, funcional, listo para implement
     this._diag(`Creating algorithm: ${title}`);
 
     const proposal = await this.safe(() =>
-      base44.entities.ImprovementProposal.create({
+      FirestoreEntities.ImprovementProposal.create({
         title,
         description: description || '',
         category: category || 'otro',
@@ -303,7 +304,7 @@ Sé específico y completo. Genera código real, funcional, listo para implement
   async editProposal(id, updates) {
     this._diag(`Editing proposal: ${id}`);
     const updated = await this.safe(() =>
-      base44.entities.ImprovementProposal.update(id, updates)
+      FirestoreEntities.ImprovementProposal.update(id, updates)
     , null);
     if (updated) {
       this.emit(EVENTS.LOG_ADDED, {
@@ -321,7 +322,7 @@ Sé específico y completo. Genera código real, funcional, listo para implement
   /** @param {string} id */
   async deleteProposal(id) {
     this._diag(`Deleting proposal: ${id}`);
-    await this.safe(() => base44.entities.ImprovementProposal.delete(id));
+    await this.safe(() => FirestoreEntities.ImprovementProposal.delete(id));
     this.emit(EVENTS.LOG_ADDED, {
       module: 'vde',
       message: `Propuesta eliminada: ${id}`,

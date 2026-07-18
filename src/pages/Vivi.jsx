@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Mic, MicOff, Keyboard, Settings2, LogOut, Power, Hand, PhoneCall } from 'lucide-react';
 import { useVivi } from '@/vivi/hooks/useVivi';
-import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { EVENTS } from '@/vivi/events';
 import ViviAvatar from '@/components/vivi/ViviAvatar';
 import ViviStatusIndicator from '@/components/vivi/ViviStatusIndicator';
@@ -14,11 +14,12 @@ import PageTransition from '@/components/PageTransition';
 // Auto-starts listening on first tap — no manual button pressing needed.
 export default function Vivi() {
   const { avatarState, avatarGesture, avatarEmotion, caption, listening, audioLevel, toggleMic, cancelSpeech, stopListening, updateSettings, user, vivi, deliverGreeting, hasPendingGreeting } = useVivi();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conversationStarted, setConversationStarted] = useState(false);
 
-  const handleLogout = () => base44.auth.logout('/');
+  const handleLogout = () => logout(true);
   const handlePowerOff = () => {
     cancelSpeech();
     if (listening) stopListening();

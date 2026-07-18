@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, X, Image as ImageIcon, FileText, Loader2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { UploadFile } from '@/lib/firebaseStorageAdapter';
 
 // Pure presentational component — receives onSend / onSendWithImage / onSendWithFile callbacks from parent.
 // Supports image uploads (vision) and document uploads (PDF, text, etc. for analysis).
@@ -19,7 +19,7 @@ export default function TextComposer({ open, onClose, onSend, onSendWithImage, o
     if (!file) return;
     setUploading(true);
     try {
-      const result = await base44.integrations.Core.UploadFile({ file });
+      const result = await UploadFile({ file });
       setSelectedImage(result.file_url);
       setSelectedFile(null);
     } catch (err) {
@@ -35,7 +35,7 @@ export default function TextComposer({ open, onClose, onSend, onSendWithImage, o
     if (!file) return;
     setUploading(true);
     try {
-      const result = await base44.integrations.Core.UploadFile({ file });
+      const result = await UploadFile({ file });
       setSelectedFile({ url: result.file_url, name: file.name });
       setSelectedImage(null);
     } catch (err) {

@@ -34,7 +34,6 @@ import {
   orderBy,
   limit as fsLimit,
   writeBatch,
-  serverTimestamp,
   getFirestore,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
@@ -104,11 +103,12 @@ export function createFirestoreEntity(collectionName, opts = {}) {
 
     /** Crea un documento, inyectando ownerId + timestamps automáticamente. */
     async create(data) {
+      const now = new Date().toISOString();
       const payload = {
         ...data,
         ...(scopedToOwner ? { ownerId: requireUid() } : {}),
-        created_date: serverTimestamp(),
-        updated_date: serverTimestamp(),
+        created_date: now,
+        updated_date: now,
       };
       const ref = await addDoc(colRef, payload);
       return { id: ref.id, ...payload };
@@ -117,7 +117,8 @@ export function createFirestoreEntity(collectionName, opts = {}) {
     /** Actualiza un documento existente por id. */
     async update(id, patch) {
       const ref = doc(db, collectionName, id);
-      const payload = { ...patch, updated_date: serverTimestamp() };
+      const now = new Date().toISOString();
+      const payload = { ...patch, updated_date: now };
       await updateDoc(ref, payload);
       return { id, ...payload };
     },
@@ -147,13 +148,14 @@ export function createFirestoreEntity(collectionName, opts = {}) {
       const uid = scopedToOwner ? requireUid() : null;
       const batch = writeBatch(db);
       const created = [];
+      const now = new Date().toISOString();
       for (const data of records) {
         const ref = doc(colRef);
         const payload = {
           ...data,
           ...(uid ? { ownerId: uid } : {}),
-          created_date: serverTimestamp(),
-          updated_date: serverTimestamp(),
+          created_date: now,
+          updated_date: now,
         };
         batch.set(ref, payload);
         created.push({ id: ref.id, ...payload });

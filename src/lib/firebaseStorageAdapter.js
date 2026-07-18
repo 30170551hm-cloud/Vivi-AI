@@ -16,7 +16,14 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 import { app } from './firebase';
 
-const storage = getStorage(app);
+let storage = null;
+try {
+  if (app) {
+    storage = getStorage(app);
+  }
+} catch (e) {
+  console.warn("Firebase Storage failed to initialize:", e);
+}
 
 /**
  * Reemplazo directo de base44.integrations.Core.UploadFile.
@@ -24,9 +31,10 @@ const storage = getStorage(app);
  * @returns {Promise<{file_url: string}>}
  */
 export async function UploadFile({ file }) {
+  if (!app || !storage) throw new Error('Firebase Storage is not initialized. Ensure Firebase config environment variables are set correctly.');
   const auth = getAuth(app);
   const uid = auth.currentUser?.uid;
-  if (!uid) throw new Error('No hay usuario autenticado — no se puede subir el archivo.');
+  if (!uid) throw new Error('No authenticated user - cannot upload file.');
 
   const safeName = `${Date.now()}_${file.name}`.replace(/[^\w.\-]/g, '_');
   const path = `uploads/${uid}/${safeName}`;

@@ -15,7 +15,7 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
 import { CoreIntegrations } from '@/lib/llmProviders';
 
 const FOUNDER_NAME = 'Henrry Moyses García Rojas';
@@ -345,7 +345,7 @@ export default class ViviCore extends ModuleBase {
       const history = context?.history || this._history || [];
 
       let user = null;
-      try { user = await base44.auth.me(); } catch { /* guest */ }
+      try { user = await firebaseAuthAdapter.me(); } catch { /* guest */ }
 
       const memoryBlock = memory.buildContextBlock(user);
       const historyBlock = history
@@ -441,7 +441,7 @@ Responde SOLO con el saludo, en español venezolano natural.`,
       const recent = await this.safe(() => memory.recallRecent(7, '', 10), []);
 
       let user = null;
-      try { user = await base44.auth.me(); } catch { /* guest */ }
+      try { user = await firebaseAuthAdapter.me(); } catch { /* guest */ }
 
       const memoryBlock = memory.buildContextBlock(user);
       const historyBlock = history
@@ -881,7 +881,7 @@ Responde SOLO con el saludo, en español venezolano natural.`,
     this._pipeLog('PROMPT_BUILD', { gen, forceWeb, hasFile: !!fileUrls });
 
     let user = null;
-    try { user = await base44.auth.me(); } catch { /* guest */ }
+    try { user = await firebaseAuthAdapter.me(); } catch { /* guest */ }
     if (memory) await memory.recall(); // ensure cache is warm
     const memoryBlock = memory ? memory.buildContextBlock(user) : 'Sin memoria disponible.';
     const lang = settings?.getLanguage() || 'es-ES';

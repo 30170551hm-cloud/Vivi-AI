@@ -2,7 +2,7 @@
 // Create, update status, list active items.
 
 import { ToolBase } from './ToolBase';
-import { base44 } from '@/api/base44Client';
+import { FirestoreEntities } from '@/lib/firebaseEntities';
 
 export default class ProjectManagementTool extends ToolBase {
   constructor() {
@@ -20,7 +20,7 @@ export default class ProjectManagementTool extends ToolBase {
     switch (action) {
       case 'create': {
         const type = params.type || 'task'; // project | goal | task
-        const record = await base44.entities.Memory.create({
+        const record = await FirestoreEntities.Memory.create({
           category: type,
           key: params.title || '',
           value: params.description || params.title || '',
@@ -32,11 +32,11 @@ export default class ProjectManagementTool extends ToolBase {
         return { success: true, data: { item: record } };
       }
       case 'update_status': {
-        const record = await base44.entities.Memory.update(params.id, { status: params.status });
+        const record = await FirestoreEntities.Memory.update(params.id, { status: params.status });
         return { success: true, data: { item: record } };
       }
       case 'list_active': {
-        const memories = await base44.entities.Memory.list('-importance', 200);
+        const memories = await FirestoreEntities.Memory.list('-importance', 200);
         const types = params.types || ['project', 'goal', 'task'];
         const active = memories.filter((m) =>
           types.includes(m.category) && (!m.status || m.status === 'active')

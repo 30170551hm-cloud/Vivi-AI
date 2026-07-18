@@ -4,7 +4,7 @@
 // must respond with the standard "no access" fallback — never a guess.
 
 import { ModuleBase } from '../core/ModuleBase';
-import { base44 } from '@/api/base44Client';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 // Detection patterns — intentionally broad to catch natural phrasings.
 const TIME_PATTERNS =
@@ -91,7 +91,7 @@ export default class ViviRealtimeFacts extends ModuleBase {
     const locale = this._localeFor(lang);
 
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
+      const res = await CoreIntegrations.InvokeLLM({
         prompt: `Reverse geocode these coordinates to the nearest city and country. Latitude: ${latitude}, Longitude: ${longitude}. Reply in locale ${locale}.`,
         add_context_from_internet: true,
         model: 'gemini_3_flash',
@@ -124,7 +124,7 @@ export default class ViviRealtimeFacts extends ModuleBase {
     if (!location) return null;
     const locale = this._localeFor(lang);
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
+      const res = await CoreIntegrations.InvokeLLM({
         prompt: `What is the current weather in ${location}? Provide the temperature in Celsius and a brief description of conditions. Reply in locale ${locale}.`,
         add_context_from_internet: true,
         model: 'gemini_3_flash',
@@ -195,7 +195,7 @@ export default class ViviRealtimeFacts extends ModuleBase {
     if (!position) return null;
     const { latitude, longitude } = position.coords;
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
+      const res = await CoreIntegrations.InvokeLLM({
         prompt: `Reverse geocode to city and country: latitude ${latitude}, longitude ${longitude}.`,
         add_context_from_internet: true,
         model: 'gemini_3_flash',

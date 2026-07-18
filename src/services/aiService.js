@@ -13,7 +13,7 @@ const genAI = new GoogleGenerativeAI(apiKey || '');
  * Envía un mensaje directamente al modelo de Gemini y retorna la respuesta de texto.
  * Propaga cualquier error real sin ocultarlo tras mensajes de respaldo.
  * * @param {string} prompt - El texto o mensaje del usuario.
- * @param {Array<{role: string, content: string}>} [history=[]] - Historial de conversación opcional.
+ * @param {Array<{role: string, content: string, text?: string}>} [history=[]] - Historial de conversación opcional.
  * @returns {Promise<string>} - Respuesta generada por la IA.
  */
 export async function callGemini(prompt, history = []) {
@@ -29,7 +29,7 @@ export async function callGemini(prompt, history = []) {
     if (history && history.length > 0) {
       const formattedHistory = history.map(item => ({
         role: item.role === 'user' ? 'user' : 'model',
-        parts: [{ text: item.content || item.text }]
+        parts: [{ text: item.content || item.text || "" }]
       }));
 
       const chat = model.startChat({ history: formattedHistory });

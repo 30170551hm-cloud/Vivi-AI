@@ -8,13 +8,17 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
 
-const FOUNDER_EMAILS = [
-  'henrrygarciarojas@gmail.com',
-  'henrry.garcia@hryet.com',
-  'hryet.venezuela@gmail.com',
-];
+const envEmails = import.meta.env.VITE_FOUNDER_EMAILS
+  ? import.meta.env.VITE_FOUNDER_EMAILS.split(',').map((e) => e.trim().toLowerCase())
+  : [];
+
+if (envEmails.length === 0) {
+  console.warn("VITE_FOUNDER_EMAILS is not configured. Founder authentication checks will default to false.");
+}
+
+const FOUNDER_EMAILS = envEmails;
 
 export default class ViviFounderAuth extends ModuleBase {
   constructor(bus) {
@@ -35,7 +39,7 @@ export default class ViviFounderAuth extends ModuleBase {
   /** Detect if the current authenticated user is the founder. */
   async checkAndRestore() {
     const security = this.registry?.get('security');
-    const user = security?.getUser() || await this.safe(() => base44.auth.me(), null);
+    const user = security?.getUser() || await this.safe(() => firebaseAuthAdapter.me(), null);
 
     if (!user) {
       this._isFounder = false;

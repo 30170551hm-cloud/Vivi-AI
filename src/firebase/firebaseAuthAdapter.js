@@ -5,7 +5,9 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  sendPasswordResetEmail,
+  confirmPasswordReset
 } from "firebase/auth";
 
 import {
@@ -45,6 +47,7 @@ export const firebaseAuthAdapter = {
       {
         uid: user.uid,
         email: user.email,
+        is_founder: false,
         createdAt: new Date().toISOString(),
         ...additionalData
       },
@@ -73,6 +76,7 @@ export const firebaseAuthAdapter = {
       await setDoc(ref, {
         uid: user.uid,
         email: user.email,
+        is_founder: false,
         createdAt: new Date().toISOString()
       });
 
@@ -153,6 +157,14 @@ export const firebaseAuthAdapter = {
     return signOut(auth);
   },
 
+  async resetPasswordRequest(email) {
+    return sendPasswordResetEmail(auth, email);
+  },
+
+  async resetPassword(oobCode, newPassword) {
+    return confirmPasswordReset(auth, oobCode, newPassword);
+  },
+
   onAuthStateChanged(callback) {
     return onAuthStateChanged(auth, callback);
   },
@@ -161,8 +173,12 @@ export const firebaseAuthAdapter = {
     return onAuthStateChanged(auth, callback);
   },
 
-  redirectToLogin() {
-    window.location.href = "/login";
+  redirectToLogin(redirectPath) {
+    if (redirectPath) {
+      window.location.href = `/login?redirect=${encodeURIComponent(redirectPath)}`;
+    } else {
+      window.location.href = "/login";
+    }
   }
 
 };

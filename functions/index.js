@@ -244,7 +244,7 @@ function normalizeSchema(schema) {
   return copy;
 }
 
-async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls, model: requestedModel }) {
+async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls, model: requestedModel, add_context_from_internet }) {
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(apiKey);
   
@@ -264,6 +264,8 @@ async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls, model: r
   const model = genAI.getGenerativeModel({
     model: modelName,
     generationConfig: normalizedSchema ? { responseMimeType: 'application/json', responseSchema: normalizedSchema } : undefined,
+    // Enable Google Search grounding dynamically when requested (Google Generative AI SDK feature)
+    tools: add_context_from_internet ? [{ googleSearch: {} }] : undefined,
   });
 
   const parts = [{ text: prompt }];
@@ -318,7 +320,7 @@ async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls, model: r
 
 export const callLLM = onCall({ secrets: [OPENAI_API_KEY, GEMINI_API_KEY] }, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Se requiere iniciar sesión.');
-  const { prompt, response_json_schema, file_urls, provider, model } = request.data || {};
+  const { prompt, response_json_schema, file_urls, provider, model, add_context_from_internet } = request.data || {};
   if (!prompt || typeof prompt !== 'string') throw new HttpsError('invalid-argument', 'Falta "prompt" (string).');
 
   const keys = { openai: OPENAI_API_KEY.value(), gemini: GEMINI_API_KEY.value() };
@@ -326,7 +328,7 @@ export const callLLM = onCall({ secrets: [OPENAI_API_KEY, GEMINI_API_KEY] }, asy
 
   try {
     if (chosen === 'openai') return await invokeOpenAI({ apiKey: keys.openai, prompt, responseSchema: response_json_schema, fileUrls: file_urls });
-    if (chosen === 'gemini') return await invokeGemini({ apiKey: keys.gemini, prompt, responseSchema: response_json_schema, fileUrls: file_urls, model });
+    if (chosen === 'gemini') return await invokeGemini({ apiKey: keys.gemini, prompt, responseSchema: response_json_schema, fileUrls: file_urls, model, add_context_from_internet });
     throw new HttpsError('invalid-argument', `Proveedor desconocido: ${chosen}`);
   } catch (err) {
     throw new HttpsError('internal', `Fallo del proveedor ${chosen}: ${err.message}`);
