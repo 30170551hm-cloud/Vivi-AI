@@ -171,8 +171,12 @@ export const firebaseAuthAdapter = {
     return onAuthStateChanged(auth, callback);
   },
 
-  redirectToLogin() {
-    window.location.href = "/login";
+  redirectToLogin(redirectPath) {
+    if (redirectPath) {
+      window.location.href = `/login?redirect=${encodeURIComponent(redirectPath)}`;
+    } else {
+      window.location.href = "/login";
+    }
   }
 
 };

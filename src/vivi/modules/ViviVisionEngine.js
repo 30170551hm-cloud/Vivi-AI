@@ -53,7 +53,7 @@ Instrucciones:
   /** Detect the type of content in an image (photo, document, diagram, screenshot). */
   async detectType(fileUrl) {
     const result = await this.safe(() =>
-      base44.integrations.Core.InvokeLLM({
+      CoreIntegrations.InvokeLLM({
         prompt: 'Identifica el tipo de contenido de esta imagen. Responde solo con una palabra: foto, documento, diagrama, grafico, captura, otro.',
         file_urls: [fileUrl],
         response_json_schema: {
