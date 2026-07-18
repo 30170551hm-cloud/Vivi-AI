@@ -5,7 +5,9 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  sendPasswordResetEmail,
+  confirmPasswordReset
 } from "firebase/auth";
 
 import {
@@ -151,6 +153,14 @@ export const firebaseAuthAdapter = {
 
   async logout() {
     return signOut(auth);
+  },
+
+  async resetPasswordRequest(email) {
+    return sendPasswordResetEmail(auth, email);
+  },
+
+  async resetPassword(oobCode, newPassword) {
+    return confirmPasswordReset(auth, oobCode, newPassword);
   },
 
   onAuthStateChanged(callback) {
