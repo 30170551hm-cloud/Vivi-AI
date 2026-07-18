@@ -31,6 +31,8 @@ service cloud.firestore {
     }
 
     // ── users/{uid} — perfil y preferencias (equivalente a base44 User entity) ──
+    // NOTA: Para evitar elevación de privilegios, los usuarios no pueden marcarse como is_founder.
+    // La asignación de is_founder: true debe realizarse manualmente desde la Consola de Firebase o via Admin SDK.
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isFounder());
       allow create: if isSignedIn() && request.auth.uid == userId && (!("is_founder" in request.resource.data) || request.resource.data.is_founder == false);

@@ -31,7 +31,7 @@ try {
  * @returns {Promise<{file_url: string}>}
  */
 export async function UploadFile({ file }) {
-  if (!app || !storage) throw new Error('Firebase Storage is not initialized.');
+  if (!app || !storage) throw new Error('Firebase Storage is not initialized. Ensure Firebase config environment variables are set correctly.');
   const auth = getAuth(app);
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error('No authenticated user - cannot upload file.');

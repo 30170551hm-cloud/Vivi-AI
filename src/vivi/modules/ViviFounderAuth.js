@@ -14,6 +14,10 @@ const envEmails = import.meta.env.VITE_FOUNDER_EMAILS
   ? import.meta.env.VITE_FOUNDER_EMAILS.split(',').map((e) => e.trim().toLowerCase())
   : [];
 
+if (envEmails.length === 0) {
+  console.warn("VITE_FOUNDER_EMAILS is not configured. Founder authentication checks will default to false.");
+}
+
 const FOUNDER_EMAILS = envEmails;
 
 export default class ViviFounderAuth extends ModuleBase {
