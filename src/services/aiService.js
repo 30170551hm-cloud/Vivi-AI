@@ -29,7 +29,7 @@ export async function callGemini(prompt, history = []) {
     if (history && history.length > 0) {
       const formattedHistory = history.map(item => ({
         role: item.role === 'user' ? 'user' : 'model',
-        parts: [{ text: item.content || "" }]
+        parts: [{ text: item.content || item['text'] || "" }]
       }));
 
       const chat = model.startChat({ history: formattedHistory });

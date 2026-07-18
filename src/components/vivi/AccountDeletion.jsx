@@ -33,8 +33,8 @@ export default function AccountDeletion() {
       const userId = me?.uid;
       if (userId) {
         await Promise.all([
-          FirestoreEntities.Memory.deleteMany({}),
-          FirestoreEntities.ChatMessage.deleteMany({}),
+          FirestoreEntities.Memory.deleteMany({ ownerId: userId }),
+          FirestoreEntities.ChatMessage.deleteMany({ ownerId: userId }),
         ]);
       }
       await firebaseAuthAdapter.logout();

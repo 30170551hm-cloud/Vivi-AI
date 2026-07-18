@@ -47,6 +47,7 @@ export const firebaseAuthAdapter = {
       {
         uid: user.uid,
         email: user.email,
+        is_founder: false,
         createdAt: new Date().toISOString(),
         ...additionalData
       },
@@ -75,6 +76,7 @@ export const firebaseAuthAdapter = {
       await setDoc(ref, {
         uid: user.uid,
         email: user.email,
+        is_founder: false,
         createdAt: new Date().toISOString()
       });
 

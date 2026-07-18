@@ -21,6 +21,9 @@ try {
   if (!hasConfig) {
     console.warn("Firebase config is incomplete. Firebase will not be initialized.");
   } else {
+    if (!firebaseConfig.authDomain || !firebaseConfig.storageBucket) {
+      console.warn("Firebase config is missing authDomain or storageBucket. Some features may not work.");
+    }
     app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
     db = getFirestore(app);
