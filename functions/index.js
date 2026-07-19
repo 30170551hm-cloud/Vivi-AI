@@ -314,8 +314,7 @@ async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls, model: r
   }
 }
 
-export const callLLM = onCall({ secrets: [OPENAI_API_KEY, GEMINI_API_KEY] }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Se requiere iniciar sesión.');
+export const callLLM = onCall(async (request) => {  if (!request.auth) throw new HttpsError('unauthenticated', 'Se requiere iniciar sesión.');
   const { prompt, response_json_schema, file_urls, provider, model } = request.data || {};
   if (!prompt || typeof prompt !== 'string') throw new HttpsError('invalid-argument', 'Falta "prompt" (string).');
 
