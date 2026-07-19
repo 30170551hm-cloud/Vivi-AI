@@ -7,8 +7,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 initializeApp();
 
-const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
-const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
+const OPENAI_API_KEY = { value: () => process.env.OPENAI_API_KEY };const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 const GITHUB_TOKEN = defineSecret('GITHUB_TOKEN');
 const REPO_EDIT_ALLOWLIST = defineSecret('REPO_EDIT_ALLOWLIST');
 const REPO_EDIT_REQUIRE_APPROVAL = defineSecret('REPO_EDIT_REQUIRE_APPROVAL');
