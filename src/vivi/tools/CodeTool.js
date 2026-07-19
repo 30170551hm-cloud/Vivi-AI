@@ -2,7 +2,7 @@
 // Uses InvokeLLM for all code-related tasks.
 
 import { ToolBase } from './ToolBase';
-import { base44 } from '@/api/base44Client';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 export default class CodeTool extends ToolBase {
   constructor() {
@@ -29,7 +29,7 @@ export default class CodeTool extends ToolBase {
     const prompt = prompts[action];
     if (!prompt) return { success: false, data: null, error: `Acción desconocida: ${action}` };
 
-    const response = await base44.integrations.Core.InvokeLLM();
+    const response = await CoreIntegrations.InvokeLLM({ prompt });
     const text = String(response ?? '');
     return { success: true, data: { result: text } };
   }

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Mic, MicOff, Keyboard, Settings2, LogOut, Power, Hand, PhoneCall } from 'lucide-react';
 import { useVivi } from '@/vivi/hooks/useVivi';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
 import { EVENTS } from '@/vivi/events';
 import ViviAvatar from '@/components/vivi/ViviAvatar';
 import ViviStatusIndicator from '@/components/vivi/ViviStatusIndicator';
@@ -18,7 +18,7 @@ export default function Vivi() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conversationStarted, setConversationStarted] = useState(false);
 
-  const handleLogout = () => base44.auth.logout('/');
+  const handleLogout = () => firebaseAuthAdapter.logout().then(() => navigate('/login'));
   const handlePowerOff = () => {
     cancelSpeech();
     if (listening) stopListening();

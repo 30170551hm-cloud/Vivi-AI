@@ -172,4 +172,6 @@ export const FirestoreEntities = {
   ToolAction: createFirestoreEntity('tool_actions'),
   ImprovementProposal: createFirestoreEntity('improvement_proposals', { scopedToOwner: false }),
   CertificationTest: createFirestoreEntity('certification_tests', { scopedToOwner: false }),
+  // User is unscoped — founders can list all users per Firestore rules (isFounder() check)
+  User: createFirestoreEntity('users', { scopedToOwner: false }),
 };

@@ -126,20 +126,20 @@ export const firebaseAuthAdapter = {
     }
 
     const ref = doc(db, USERS_COLLECTION, current.uid);
-    const nextProfile = {};
 
-    if (typeof patch.display_name === 'string') {
-      nextProfile.display_name = patch.display_name;
+    // Allow any preference fields to be persisted; always include identity fields.
+    const allowedFields = [
+      'display_name', 'preferred_language', 'voice_enabled', 'voice_name',
+      'voice_rate', 'voice_pitch', 'voice_volume', 'precise_mode',
+    ];
+    const updatePayload = { uid: current.uid, email: current.email, updatedAt: new Date().toISOString() };
+    for (const key of Object.keys(patch)) {
+      if (allowedFields.includes(key)) {
+        updatePayload[key] = patch[key];
+      }
     }
 
-    await setDoc(ref, {
-      uid: current.uid,
-      email: current.email,
-      updatedAt: new Date().toISOString(),
-      ...nextProfile
-    }, {
-      merge: true
-    });
+    await setDoc(ref, updatePayload, { merge: true });
 
     const snap = await getDoc(ref);
     if (!snap.exists()) {

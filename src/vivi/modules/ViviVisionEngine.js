@@ -6,7 +6,7 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 export default class ViviVisionEngine extends ModuleBase {
   constructor(bus) {
@@ -35,7 +35,7 @@ Instrucciones:
     this.emit(EVENTS.VISION_ANALYZE, { fileUrl, question });
 
     const result = await this.safe(() =>
-      base44.integrations.Core.InvokeLLM({
+      CoreIntegrations.InvokeLLM({
         prompt,
         file_urls: [fileUrl],
       }),
@@ -53,7 +53,7 @@ Instrucciones:
   /** Detect the type of content in an image (photo, document, diagram, screenshot). */
   async detectType(fileUrl) {
     const result = await this.safe(() =>
-      base44.integrations.Core.InvokeLLM({
+      CoreIntegrations.InvokeLLM({
         prompt: 'Identifica el tipo de contenido de esta imagen. Responde solo con una palabra: foto, documento, diagrama, grafico, captura, otro.',
         file_urls: [fileUrl],
         response_json_schema: {

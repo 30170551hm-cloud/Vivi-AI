@@ -15,7 +15,8 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { CoreIntegrations } from '@/lib/llmProviders';
+import { FirestoreEntities } from '@/lib/firebaseEntities';
 
 import WebSearchTool from '../tools/WebSearchTool';
 import MemoryTool from '../tools/MemoryTool';
@@ -89,7 +90,7 @@ export default class ViviTOOR extends ModuleBase {
     const toolDescriptions = toolList.map((t) => `- ${t.name}: ${t.description}`).join('\n');
 
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await CoreIntegrations.InvokeLLM({
         prompt: `Analiza la solicitud del usuario y determina qué herramienta de Vivi debe usarse.
 
 Herramientas disponibles:
@@ -208,7 +209,7 @@ Si la solicitud es una conversación normal, saludo, o pregunta que Vivi puede r
     }
 
     // Persist to entity for permanent audit trail (fire-and-forget)
-    this.safe(() => base44.entities.ToolAction.create({
+    this.safe(() => FirestoreEntities.ToolAction.create({
       tool_name: entry.tool_name,
       action: entry.action,
       input_summary: entry.input_summary,
@@ -226,7 +227,7 @@ Si la solicitud es una conversación normal, saludo, o pregunta que Vivi puede r
 
   /** Get recent persisted actions from the database. */
   async getPersistedActions(limit = 50) {
-    return await this.safe(() => base44.entities.ToolAction.list('-created_date', limit), null);
+    return await this.safe(() => FirestoreEntities.ToolAction.list('-created_date', limit), null);
   }
 
   /** @param {string} message */

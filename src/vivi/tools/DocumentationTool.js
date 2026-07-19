@@ -1,7 +1,7 @@
 // DocumentationTool — Generate documentation from code or specifications.
 
 import { ToolBase } from './ToolBase';
-import { base44 } from '@/api/base44Client';
+import { CoreIntegrations } from '@/lib/llmProviders';
 
 export default class DocumentationTool extends ToolBase {
   constructor() {
@@ -24,7 +24,7 @@ export default class DocumentationTool extends ToolBase {
     };
 
     const prompt = prompts[type] || prompts.general;
-    const response = await base44.integrations.Core.InvokeLLM({ prompt });
+    const response = await CoreIntegrations.InvokeLLM({ prompt });
     const text = typeof response === 'string' ? response.trim() : '';
     return { success: true, data: { documentation: text } };
   }

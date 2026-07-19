@@ -8,7 +8,7 @@
 
 import { ModuleBase } from '../core/ModuleBase';
 import { EVENTS } from '../events';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthAdapter } from '@/firebase/firebaseAuthAdapter';
 
 const FOUNDER_EMAILS = [
   'henrrygarciarojas@gmail.com',
@@ -35,7 +35,7 @@ export default class ViviFounderAuth extends ModuleBase {
   /** Detect if the current authenticated user is the founder. */
   async checkAndRestore() {
     const security = this.registry?.get('security');
-    const user = security?.getUser() || await this.safe(() => base44.auth.me(), null);
+    const user = security?.getUser() || await this.safe(() => firebaseAuthAdapter.me(), null);
 
     if (!user) {
       this._isFounder = false;
