@@ -8,7 +8,8 @@ import { Link } from 'react-router-dom';
 import { Crown, LogOut, ChevronDown, Brain, Cpu } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { base44 } from '@/api/base44Client';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import VoiceSettings from '@/components/vivi/VoiceSettings';
 import AccountDeletion from '@/components/vivi/AccountDeletion';
 
@@ -135,7 +136,7 @@ export default function SettingsPanel({ open, onOpenChange, user, onUpdateSettin
 
           <Button
             variant="ghost"
-            onClick={() => base44.auth.logout()}
+            onClick={() => signOut(auth)}
             className="w-full text-white/60 hover:text-white hover:bg-white/5"
           >
             <LogOut className="w-4 h-4 mr-2" /> Cerrar sesión
