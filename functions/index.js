@@ -330,8 +330,7 @@ export const callLLM = onCall(async (request) => {  if (!request.auth) throw new
   }
 });
 
-export const generateSpeech = onCall({ secrets: [OPENAI_API_KEY] }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Se requiere iniciar sesión.');
+export const generateSpeech = onCall(async (request) => {  if (!request.auth) throw new HttpsError('unauthenticated', 'Se requiere iniciar sesión.');
   const { text } = request.data || {};
   if (!text || typeof text !== 'string') throw new HttpsError('invalid-argument', 'Falta "text" (string).');
 
