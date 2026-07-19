@@ -1,15 +1,20 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { defineSecret } from 'firebase-functions/params';
 import { setGlobalOptions } from 'firebase-functions/v2';
-import 'dotenv/config';import { getStorage } from 'firebase-admin/storage';
+import 'dotenv/config';
+import { initializeApp } from 'firebase-admin/app';
+import { getStorage } from 'firebase-admin/storage';
 import { getFirestore } from 'firebase-admin/firestore';
 
 initializeApp();
 
-const OPENAI_API_KEY = { value: () => process.env.OPENAI_API_KEY };const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
+const OPENAI_API_KEY = {
+  value: () => process.env.OPENAI_API_KEY
+};
 const GITHUB_TOKEN = defineSecret('GITHUB_TOKEN');
 const REPO_EDIT_ALLOWLIST = defineSecret('REPO_EDIT_ALLOWLIST');
-const REPO_EDIT_REQUIRE_APPROVAL = defineSecret('REPO_EDIT_REQUIRE_APPROVAL');
+import { defineSecret } from 'firebase-functions/params';
+import 'dotenv/config';
 
 setGlobalOptions({ region: 'us-central1', maxInstances: 10 });
 
@@ -204,7 +209,7 @@ async function invokeOpenAI({ apiKey, prompt, responseSchema, fileUrls }) {
   return responseSchema ? JSON.parse(text) : text;
 }
 
-async function generateImageOpenAI({ apiKey, prompt }) {
+export const generateImage = onCall(async (request) => {
   const { default: OpenAI } = await import('openai');
   const client = new OpenAI({ apiKey });
   const result = await client.images.generate({ model: 'dall-e-3', prompt, n: 1, size: '1024x1024' });
@@ -314,7 +319,7 @@ async function invokeGemini({ apiKey, prompt, responseSchema, fileUrls, model: r
   }
 }
 
-export const callLLM = onCall(async (request) => {  if (!request.auth) throw new HttpsError('unauthenticated', 'Se requiere iniciar sesión.');
+export const callLLM = onCall(async (request) => {
   const { prompt, response_json_schema, file_urls, provider, model } = request.data || {};
   if (!prompt || typeof prompt !== 'string') throw new HttpsError('invalid-argument', 'Falta "prompt" (string).');
 
@@ -330,7 +335,7 @@ export const callLLM = onCall(async (request) => {  if (!request.auth) throw new
   }
 });
 
-export const generateSpeech = onCall(async (request) => {  if (!request.auth) throw new HttpsError('unauthenticated', 'Se requiere iniciar sesión.');
+export const generateSpeech = onCall(async (request) => {
   const { text } = request.data || {};
   if (!text || typeof text !== 'string') throw new HttpsError('invalid-argument', 'Falta "text" (string).');
 
@@ -344,7 +349,7 @@ export const generateSpeech = onCall(async (request) => {  if (!request.auth) th
   }
 });
 
-export const generateImage = onCall({ secrets: [OPENAI_API_KEY] }, async (request) => {
+export const generateImage = onCall(async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Se requiere iniciar sesión.');
   const { prompt } = request.data || {};
   if (!prompt || typeof prompt !== 'string') throw new HttpsError('invalid-argument', 'Falta "prompt" (string).');
